@@ -30,6 +30,8 @@ namespace MapGenerator
 			Random rand = new Random();
 			List<Vector> notUsed = new List<Vector>();
 
+			args = args ?? Console.ReadLine()?.Split(' ') ?? new[] {"30", "10", "10", "true"};
+
 			int size = int.Parse(args[0]);
 			int percentageB = int.Parse(args[1]);
 			int percentageK = int.Parse(args[2]);

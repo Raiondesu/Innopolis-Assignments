@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace EscapeMission
@@ -18,8 +19,7 @@ namespace EscapeMission
 
 		public Matrix(string filename, Vector size = null) : this(size)
 		{
-			string[] lines = System.IO.File.ReadAllLines(filename);
-
+			string[] lines = File.ReadAllLines(filename);
 			foreach (string t in lines)
 			{
 				var line = t.Split(' ');
@@ -40,15 +40,11 @@ namespace EscapeMission
 			for (var j = 0; j < Size.X; j++)
 			for (var k = 0; k < Size.Y; k++)
 			for (var l = 0; l < Size.Z; l++)
-				Cells[j, k, l] = new Cell(matrix.Cells[j, k, l]) {Visited = false};
+				Cells[j, k, l] = new Cell(matrix.Cells[j, k, l]) {Visited = true};
 		}
 
 		public Cell[,,] Cells { get; }
-		public Cell Root
-		{
-			get { return Cells[0, 0, 0]; }
-			set { Cells[0, 0, 0] = value; }
-		}
+		public Cell Root { get { return Cells[0, 0, 0]; } set { Cells[0, 0, 0] = value; } }
 
 		public Vector Size { get; protected set; }
 
@@ -59,13 +55,13 @@ namespace EscapeMission
 
 			public Cell(int x, int y, int z, Matrix parent)
 			{
-				Location = new Vector(x, y ,z);
+				Location = new Vector(x, y, z);
 				Parent = parent;
 				Occupant = OccupantType.Empty;
 			}
 
-			public Cell(Vector coordinate, Matrix parent) :
-				this(coordinate.X, coordinate.Y, coordinate.Z, parent){}
+			public Cell(Vector coordinate, Matrix parent)
+				: this(coordinate.X, coordinate.Y, coordinate.Z, parent) {}
 
 			public Cell(Cell cell)
 			{
@@ -91,7 +87,11 @@ namespace EscapeMission
 			public bool IsEmpty => Occupant == OccupantType.Empty;
 			public bool IsUnknown => Occupant == OccupantType.Unknown;
 
-			public OccupantType Radiation => Visited ? Neighbours.Aggregate(Occupant, (current, cell) => current | cell.Occupant) : OccupantType.Unknown;
+			public OccupantType Radiation
+				=> Visited ?
+					Neighbours.Aggregate(Occupant, (current, cell) => current | cell.Occupant) :
+					OccupantType.Unknown;
+
 			public bool HasKrakenRadiation => Radiation.HasFlag(OccupantType.Kraken);
 			public bool HasBlackHoleRadiation => Radiation.HasFlag(OccupantType.Blackhole);
 			public bool HasPlanetRadiation => Radiation.HasFlag(OccupantType.Planet);
@@ -100,7 +100,7 @@ namespace EscapeMission
 
 			public bool Visited { get; set; }
 
-			public List<Cell> Neighbours
+			private List<Cell> Neighbours
 			{
 				get
 				{
@@ -121,22 +121,26 @@ namespace EscapeMission
 				}
 			}
 
-			public override string ToString() => $"[{X}, {Y}, {Z}] = {this.CellToString()}";
-
-			public string CellToString(bool printRad = true)
+			public string CellToString(
+				bool printRad = true)
 			{
 				if (printRad && this.IsEmpty)
-					return " " + (!this.HasRadiation ? "·" : ((int) this.Radiation).ToString())+ " ";
+					return (!this.HasRadiation ? "·" : ((int) this.Radiation).ToString());
 				if (this.IsUnknown)
-					return " ■ ";
+					return "■";
 				if (this.HasPlanet)
-					return " P ";
+					return "P";
 				if (this.HasBlackHole)
-					return " B ";
+					return "B";
 				if (this.HasKraken)
-					return " K ";
-				return " · ";
+					return "K";
+				return "·";
 			}
+
+			public override string ToString() => $"[{X}, {Y}, {Z}] = {this.CellToString()}";
+
+			public static implicit operator int(Cell cell)
+				=> (int) (cell.Visited ? cell.Occupant : OccupantType.Unknown);
 		}
 
 		[Flags]
@@ -152,7 +156,13 @@ namespace EscapeMission
 		public override string ToString()
 			=> $"\nRadiation:\n{this.CellsToString()}\nMap:\n{CellsToString(false)}\n\n";
 
-		public string CellsToString(bool printRad = true, Vector special = null)
+		public string CellsToString(bool printRad, Vector special)
+			=> CellsToString(printRad, special == null ? null : new List<Cell> {this.Cells[special.X, special.Y, special.Z]});
+
+		public string CellsToString(bool printRad = true, Cell special = null)
+			=> CellsToString(printRad, special == null ? null : new List<Cell> {special});
+
+		public string CellsToString(bool printRad, List<Cell> special)
 		{
 			string result = "";
 			for (var z = 0; z < Size.Z; z++)
@@ -168,15 +178,49 @@ namespace EscapeMission
 							result += x == -1 ? "└" : x == Size.X ? "┘" : "───";
 						else if (x == -1 || x == Size.X)
 							result += "│";
-						else if (special == null || special.X != x || special.Y != y || special.Z != z)
-							result += Cells[x, y, z].CellToString(printRad);
-						else if (special.X == x && special.Y == y && special.Z == z)
-							result += " @ ";
+						else if (special == null || special.Count == 0 || special.All(v =>  v.X != x || v.Y != y || v.Z != z))
+							result += $" {Cells[x, y, z].CellToString(printRad)} ";
+						else if (special.Any(v => v.X == x && v.Y == y && v.Z == z))
+							result += $"[{Cells[x, y, z].CellToString(printRad)}]";
 					}
 				}
 				result += "\n";
 			}
 			return result;
+		}
+
+		public static Matrix Generate()
+		{
+			StreamWriter file = File.CreateText("input.txt");
+			Random rand = new Random();
+			List<Vector> notUsed = new List<Vector>();
+
+			string line = Console.ReadLine();
+			string[] args = line?.Length > 0 ? line.Split(' ') : new[] {"20", "20", "1", "10", "10"};
+
+			Vector size = new Vector(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
+			int percentageB = int.Parse(args[3]);
+			int percentageK = int.Parse(args[4]);
+			int percentage = percentageB + percentageK;
+
+			for (int x = 0; x < size.X; x++)
+			for (int y = 0; y < size.Y; y++)
+			for (int z = 0; z < size.Z; z++)
+			{
+				int d = rand.Next(0, 100);
+				bool obstacle = d < percentage;
+				if (!obstacle)
+					notUsed.Add(new Vector(x, y, z));
+				else if (x > 0 || y > 0 || z > 0)
+					file.Write((rand.Next(percentage) < percentageK ? "K " : "B ") + new Vector(x, y, z) + "\n");
+			}
+
+			file.Write("P " + notUsed[rand.Next(notUsed.Count)] + "\n");
+			file.Flush();
+			file.Close();
+
+			Matrix matrix = new Matrix("input.txt", size);
+			return matrix;
 		}
 	}
 }

@@ -1,30 +1,33 @@
 ﻿using System;
+using System.Linq;
 
 namespace EscapeMission
 {
     internal class Program
     {
         public static void Main(string[] args)
-			=> Escape(new Matrix("input.txt", new Vector(50, 50, 1)));
+        {
+	        if (args.Contains("test"))
+		        Escape(Matrix.Generate(), args.Contains("log"));
+	        else
+		        Escape(new Matrix("input.txt", new Vector(60, 30, 1)), true);
+        }
 
-	    public static void Escape(Matrix matrix)
+	    public static void Escape(Matrix matrix, bool log = false)
 	    {
-//		    if (matrix.Size.Z == 1) Console.WriteLine(matrix);
+//		    if (matrix.Size.Z == 1 && log) Console.WriteLine(matrix);
 
-		    Ship pod = new Ship(matrix, false);
+		    Ship pod = new Ship(matrix, log);
 
-		    var watch = System.Diagnostics.Stopwatch.StartNew();
-		    pod.Escape(Ship.Algorithms.Backtracker);
-		    watch.Stop();
+		    pod.Escape(Ship.Algorithms.AStar);
 
-//		    if (matrix.Size.Z == 1) Console.WriteLine(pod.Map);
+//		    if (matrix.Size.Z == 1 && log) Console.WriteLine(pod.Map);
 
+		    Console.WriteLine(pod.Deaths);
+		    Console.WriteLine(pod.Path.Count);
 //		    foreach (var cell in pod.Path)
 //			    Console.WriteLine($"{cell.Location.X} {cell.Location.Y} {cell.Location.Z}");
-		    Console.WriteLine($"{watch.ElapsedMilliseconds}ms");
-		    //TODO move these guys up:
-		    Console.WriteLine(pod.Path.Count);
-		    Console.WriteLine(pod.Deaths);
+		    Console.WriteLine($"{pod.Watch.ElapsedMilliseconds}ms");
 	    }
     }
 }

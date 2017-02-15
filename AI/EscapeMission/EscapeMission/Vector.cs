@@ -22,8 +22,7 @@
 	    {
 		    if (ReferenceEquals(null, obj)) return false;
 		    if (ReferenceEquals(this, obj)) return true;
-		    if (obj.GetType() != this.GetType()) return false;
-		    return Equals((Vector) obj);
+		    return obj.GetType() == this.GetType() && Equals((Vector) obj);
 	    }
 
 	    public override int GetHashCode()
@@ -38,5 +37,7 @@
 	    }
 
 	    protected bool Equals(Vector other) => X == other.X && Y == other.Y && Z == other.Z;
+
+	    public override string ToString() => $"{X} {Y} {Z}";
     }
 }
