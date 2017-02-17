@@ -1,44 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Priority_Queue;
 
 namespace EscapeMission
 {
-	struct ASStar
+	public class ASStar
 	{
 		public static List<Matrix.Cell> FindPath(Matrix.Cell from, Matrix.Cell to, Matrix.Cell[,,] field)
 		{
-			Collection<Node> closed = new Collection<Node>();
-			Collection<Node> open = new Collection<Node>();
+			var closed = new List<Node>();
+			var open = new FastPriorityQueue<Node>(10000);
 
 			Node start = new Node {
 				Location = to.Location,
 				Next = null,
 				StepsFromStart = 0,
-				EstimatedRemainingPath = EstimatePathLengthSqr(to.Location, from.Location)
+				EstimatedRemainingPath = FastEstimatePathLength(to.Location, from.Location)
 			};
 
-			open.Add(start);
+			open.Enqueue(start, start.FullPathLength);
 
 			while (open.Count > 0)
 			{
-				var current = open.OrderBy(n => n.EstimatedRemainingPath).First();
+				var current = open.Dequeue();
 				if (current.Location == from.Location)
 					return GetPathFor(current, field);
-				open.Remove(current);
+
 				closed.Add(current);
 
 				var near = Neighbours(current, from.Location, field);
 				foreach (var neighbour in near)
 				{
-					if (closed.Count(node => node.Location == neighbour.Location) > 0)
+					if (closed.Any(node => node.Location == neighbour.Location))
 						continue;
 
 					var openNode = open.FirstOrDefault(node => node.Location == neighbour.Location);
 
 					if (openNode == null)
-						open.Add(neighbour);
+						open.Enqueue(neighbour, neighbour.FullPathLength);
 					else if (openNode.StepsFromStart > neighbour.StepsFromStart)
 					{
 						openNode.Next = current;
@@ -52,20 +51,22 @@ namespace EscapeMission
 		private static List<Matrix.Cell> GetPathFor(Node current, Matrix.Cell[,,] field)
 		{
 			var result = new List<Matrix.Cell>();
-			var t = current.Next;
 
-			while (t.Next != null)
-			{
+			for (var t = current.Next; t != null; t = t.Next)
 				result.Add(field[t.Location.X, t.Location.Y, t.Location.Z]);
-				Console.WriteLine(Math.Sqrt(t.EstimatedRemainingPath));
-				t = t.Next;
-			}
 
 			return result;
 		}
 
-		public static int EstimatePathLengthSqr(Vector from, Vector to)
-			=> (from.X * from.X - to.X * to.X) + (from.Y * from.Y - to.Y * to.Y) + (from.Z * from.Z - to.Z * to.Z);
+		public static int FastEstimatePathLength(Vector from, Vector to)
+//			=> 0;
+//			=> ((from.X * from.X - to.X * to.X) + (from.Y * from.Y - to.Y * to.Y) + (from.Z * from.Z - to.Z * to.Z));
+
+		//...
+//		public static int SlowEstimatePathLength(Vector from, Vector to)
+			=> Abs(from.X - to.X) + Abs(from.Y - to.Y) + Abs(from.Z - to.Z);
+//
+		public static int Abs(int x) => (x ^ (x >> 31)) - (x >> 31);
 
 		private static IEnumerable<Node> Neighbours(Node node, Vector goal, Matrix.Cell[,,] field)
 		{
@@ -91,11 +92,11 @@ namespace EscapeMission
 						Location = v,
 						Next = node,
 						StepsFromStart = node.StepsFromStart + 1,
-						EstimatedRemainingPath = EstimatePathLengthSqr(v, goal)
+						EstimatedRemainingPath = FastEstimatePathLength(v, goal)
 					};
 		}
 
-		internal class Node
+		private class Node : FastPriorityQueueNode
 		{
 			public Vector Location { get; set; }
 			public int StepsFromStart { get; set; }

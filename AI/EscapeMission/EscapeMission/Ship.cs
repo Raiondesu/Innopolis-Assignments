@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 
 namespace EscapeMission
 {
 	public class Ship
 	{
+		private const int DeathLimit = 100;
+		private readonly Random _rand = new Random();
+		private bool _hasBomb = true;
+		private bool Log { get; }
+
+
 		public Ship(Matrix matrix, bool log = false)
 		{
 			this.Map = new Matrix(matrix);
@@ -15,20 +20,15 @@ namespace EscapeMission
 			this.Log = log;
 		}
 
-		//		private bool _hasBomb = true;
-		private bool Log { get; }
-
-		private readonly Random _rand = new Random();
-		private List<Matrix.Cell> UnknownNeighbours => this.Neighbours.FindAll(c => !c.Visited);
-
 		public Matrix Map { get; }
+
 		public Matrix.Cell Current => Path.Count == 0 ? null : Path.Last();
 		public Matrix.Cell Previous => Path.Count < 2 ? null : Path[Path.Count - 2];
 		public Matrix.Cell Destination { get; private set; }
-		public List<Matrix.Cell> Path { get; private set; } = new List<Matrix.Cell>();
 
-		public Stopwatch Watch { get; } = new Stopwatch();
-
+		public List<Matrix.Cell> Path { get; } = new List<Matrix.Cell>();
+		public List<Matrix.Cell> Visited { get; } = new List<Matrix.Cell>();
+		public List<Matrix.Cell> UnknownNeighbours => this.Neighbours.FindAll(c => !c.Visited);
 		public List<Matrix.Cell> Neighbours
 		{
 			get
@@ -57,8 +57,11 @@ namespace EscapeMission
 		public int Y => Current?.Y ?? 0;
 		public int Z => Current?.Z ?? 0;
 
-		private int SettleIn(Matrix.Cell cell)
+		public Stopwatch Watch { get; } = new Stopwatch();
+
+		private int SettleIn(Matrix.Cell cell, bool restart = false)
 		{
+			this.Visited.Add(cell);
 			this.Path.Add(cell);
 			this.Yarn.Push(cell);
 
@@ -67,107 +70,152 @@ namespace EscapeMission
 			if (cell.HasPlanet) return 1;
 
 			this.Deaths++;
-			this.Path.RemoveAt(Path.Count - 1);
-			this.Yarn.Pop();
 
-			return -1;
+			if (restart)
+			{
+				this.Path.Clear();
+				this.Yarn.Clear();
+			}
+			else
+			{
+				this.Path.RemoveAt(this.Path.Count - 1);
+				this.Yarn.Pop();
+			}
+
+			return 0;
 		}
 
-		private int MoveTo(Matrix.Cell cell)
+		private int MoveToDestination()
 		{
-			if (Current == null || ASStar.EstimatePathLengthSqr(Current.Location, cell.Location) == 1)
-				return this.SettleIn(cell);
+			if (Current == null)
+				this.SettleIn(this.Map.Root);
 
-			var path = ASStar.FindPath(Current, cell, Map.Cells);
+			if (Destination.Location == Current.Location)
+				return 0;
 
-			if (path == null) return 1;
+			var path = ASStar.FindPath(Current, Destination, Map.Cells);
 
-			//...
-			//			for (var i = 0; i < path.Count; i++)
-			//			{
-			//				if (Log)
-			//				{
-			//					Console.WriteLine(this.Map.CellsToString(false, path.GetRange(0, i)));
-			//					Thread.Sleep(200);
-			//				}
-			//				this.SettleIn(this.Map.Cells[path[i].X, path[i].Y, path[i].Z]);
-			//			}
-			//			if (Log)
-			//			{
-			//				Console.WriteLine(this.Map.CellsToString(false, path));
-			//				Thread.Sleep(200);
-			//			}
+			if (path == null)
+			{
+				this.Deaths++;
+				return -1;
+			}
 
 			this.Path.AddRange(path);
 
-			if (Log)
-			{
-				for (var i = 0; i < this.Path.Count; i++)
-				{
-					Console.WriteLine(this.Map.CellsToString(false, this.Path.GetRange(0, i)));
-					Thread.Sleep(200);
-				}
-				Console.WriteLine(this.Map.CellsToString(false, this.Path));
-				Thread.Sleep(200);
-			}
-
-			return this.SettleIn(cell);
+			return this.SettleIn(Destination);
 		}
 
-		private int MoveRandom(bool wise = true)
+		private int MoveRandom(bool restart = false)
 		{
-			List<Matrix.Cell> near = UnknownNeighbours;
-			if (wise && near.Count > 0)
-				do Destination = near[_rand.Next(near.Count)];
+			List<Matrix.Cell> near = Neighbours,
+			                  unknown = near.FindAll(c => !c.Visited);
+
+			if (unknown.Count > 0)
+				do Destination = unknown[_rand.Next(unknown.Count)];
 				while (Destination.Visited);
 			else
-				do Destination = Neighbours[_rand.Next(Neighbours.Count)];
+				do Destination = near[_rand.Next(near.Count)];
 				while (!Destination.IsEmpty);
-			return this.MoveTo(Destination);
+
+			if (this.Deaths >= DeathLimit - 1) // If we approach death...
+			{
+				if (Destination.IsEmpty || !Destination.HasRadiation)
+				{
+					this.SettleIn(Destination);
+					near = Neighbours;
+					Destination = near[_rand.Next(near.Count)];
+				}
+				if (Destination.HasKrakenRadiation)
+					this.FireAt(Destination);
+			}
+
+			return this.SettleIn(Destination, restart);
 		}
 
 		private int MoveTrack()
 		{
 			if (Previous?.HasPlanetRadiation ?? false) //Prevoius? Has planet radiation?? How could I miss THAT??? Go there!
-				return this.MoveTo(Previous);
-			if (this.Yarn.Count >= 2 && ((Current.HasBlackHoleRadiation && Current.HasKrakenRadiation)
-			                             || UnknownNeighbours.Count == 0))
+				return this.SettleIn(Previous);
+
+			if (UnknownNeighbours.Count != 0)
+				return this.MoveRandom();
+
+			if (this.Yarn.Count >= 2)
 			{
 				this.Yarn.Pop();
-				Destination = this.Yarn.Pop();
-				return this.MoveTo(Destination);
+				return this.SettleIn(this.Yarn.Pop());
 			}
-			return this.MoveRandom();
+
+			return Risk();
 		}
 
-		public void Escape(Algorithms algorithm = Algorithms.Backtracker)
+		private int Risk()
 		{
-			if (this.MoveTo(Destination) == 1) return;
-
-			switch (algorithm)
+			var krakensR = this.Visited.FindAll(c => c.HasKrakenRadiation && c.IsEmpty);
+			List<Matrix.Cell> krakens = null;
+			for (var i = 0; i < krakensR.Count && krakens == null; i++)
 			{
-				case Algorithms.Random:
-					Watch.Start();
-					do if (Log) Console.WriteLine(this.Map.CellsToString(true, Current));
-					while (this.MoveRandom() < 1);
-					Watch.Stop();
-					break;
-				case Algorithms.Backtracker:
-					Watch.Start();
-					do if (Log) Console.WriteLine(this.Map.CellsToString(true, Current));
-					while (this.MoveTrack() < 1);
-					Watch.Stop();
-					break;
-				case Algorithms.AStar:
-					this.Destination = this.Map.Cells.OfType<Matrix.Cell>().First(n => n.HasPlanet);
-					Watch.Start();
-					this.MoveTo(Destination);
-					Watch.Stop();
-					if (Log) Console.WriteLine(this.Map.CellsToString(false, this.Path));
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, null);
+				Destination = krakensR[i];
+
+				this.MoveToDestination();
+
+				krakens = this.Neighbours.FindAll(c => c.HasKraken);
+
+				if (krakens.Count == 0) krakens = null;
+				else break;
 			}
+
+			var kraken = krakens?[0];
+
+			if (this.FireAt(kraken))
+			{
+				this.SettleIn(kraken);
+				return this.MoveTrack();
+			}
+
+			return -1;
+		}
+
+		private bool FireAt(Matrix.Cell danger)
+		{
+			if (this._hasBomb && danger != null && !danger.HasBlackHole)
+			{
+				danger.Occupant = Matrix.OccupantType.Empty;
+				this._hasBomb = false;
+				return true;
+			}
+			return false;
+		}
+
+		public bool Escape(Algorithms algorithm = Algorithms.Random)
+		{
+			int code;
+			Func<int> solver = () => this.MoveRandom(true);
+			Func<bool> isAlive = () => this.Deaths < 100;
+
+			if (this.SettleIn(this.Map.Root) == 1) return true;
+
+			if (algorithm == Algorithms.Backtracker)
+			{
+				isAlive = () => true;
+				solver = this.MoveTrack;
+			}
+			else if (algorithm == Algorithms.AStar)
+			{
+				isAlive = () => this.Deaths < 1;
+				this.Map.Cells.OfType<Matrix.Cell>().All(n => n.Visited = true);
+				this.Destination = this.Map.Cells.OfType<Matrix.Cell>().First(n => n.HasPlanet);
+				solver = this.MoveToDestination;
+			}
+
+			Watch.Start();
+			do code = solver();
+			while (isAlive() && code == 0);
+			Watch.Stop();
+
+			if (Log) Console.WriteLine(this.Map.CellsToString(false, this.Path));
+			return code == 1;
 		}
 
 		public enum Algorithms

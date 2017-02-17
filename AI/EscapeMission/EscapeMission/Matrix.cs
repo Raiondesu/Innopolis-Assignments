@@ -7,23 +7,27 @@ namespace EscapeMission
 {
 	public class Matrix
 	{
-		public Matrix(Vector size = null)
+		public Matrix(Vector size) : this(size.X, size.Y, size.Z){}
+
+		public Matrix(int x, int y, int z)
 		{
-			Size = size ?? new Vector(100, 100, 100);
-			Cells = new Cell[Size.X, Size.Y, Size.Z];
-			for (var j = 0; j < Size.X; j++)
-			for (var k = 0; k < Size.Y; k++)
-			for (var l = 0; l < Size.Z; l++)
+			Size = new Vector(x, y, z);
+			Cells = new Cell[x, y, z];
+			for (var j = 0; j < x; j++)
+			for (var k = 0; k < y; k++)
+			for (var l = 0; l < z; l++)
 				Cells[j, k, l] = new Cell(j, k, l, this) {Visited = true};
 		}
 
-		public Matrix(string filename, Vector size = null) : this(size)
+		public Matrix(string filename, Vector size) : this(filename, size.X, size.Y, size.Z){}
+
+		public Matrix(string filename, int x, int y, int z) : this(x, y, z)
 		{
 			string[] lines = File.ReadAllLines(filename);
 			foreach (string t in lines)
 			{
 				var line = t.Split(' ');
-				Vector coord = new Vector(int.Parse(line[1]), int.Parse(line[2]), int.Parse(line[3]));
+				var coord = new Vector(int.Parse(line[1]), int.Parse(line[2]), int.Parse(line[3]));
 				if (line[0] == "P")
 					Cells[coord.X, coord.Y, coord.Z].Occupant |= OccupantType.Planet;
 				else if (line[0] == "K")
@@ -40,13 +44,13 @@ namespace EscapeMission
 			for (var j = 0; j < Size.X; j++)
 			for (var k = 0; k < Size.Y; k++)
 			for (var l = 0; l < Size.Z; l++)
-				Cells[j, k, l] = new Cell(matrix.Cells[j, k, l]) {Visited = true};
+				Cells[j, k, l] = new Cell(matrix.Cells[j, k, l]) {Visited = false};
 		}
 
 		public Cell[,,] Cells { get; }
 		public Cell Root { get { return Cells[0, 0, 0]; } set { Cells[0, 0, 0] = value; } }
 
-		public Vector Size { get; protected set; }
+		public Vector Size { get; }
 
 		public class Cell
 		{
@@ -100,6 +104,7 @@ namespace EscapeMission
 
 			public bool Visited { get; set; }
 
+			public int NeigboursAmount => Neighbours.Count;
 			private List<Cell> Neighbours
 			{
 				get
@@ -121,8 +126,7 @@ namespace EscapeMission
 				}
 			}
 
-			public string CellToString(
-				bool printRad = true)
+			public string CellToString(bool printRad = true)
 			{
 				if (printRad && this.IsEmpty)
 					return (!this.HasRadiation ? "·" : ((int) this.Radiation).ToString());
@@ -196,7 +200,7 @@ namespace EscapeMission
 			List<Vector> notUsed = new List<Vector>();
 
 			string line = Console.ReadLine();
-			string[] args = line?.Length > 0 ? line.Split(' ') : new[] {"20", "20", "1", "10", "10"};
+			string[] args = line?.Length > 0 ? line.Split(' ') : new[] {"60", "30", "1", "10", "10"};
 
 			Vector size = new Vector(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
 			int percentageB = int.Parse(args[3]);
@@ -219,8 +223,7 @@ namespace EscapeMission
 			file.Flush();
 			file.Close();
 
-			Matrix matrix = new Matrix("input.txt", size);
-			return matrix;
+			return new Matrix("input.txt", size);
 		}
 	}
 }
