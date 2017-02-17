@@ -130,17 +130,9 @@ namespace EscapeMission
 				do Destination = near[_rand.Next(near.Count)];
 				while (!Destination.IsEmpty);
 
-//			if (this.Deaths >= DeathLimit - 1) // If we approach death...
-//			{
-//				if (Destination.IsEmpty || !Destination.HasRadiation)
-//				{
-//					this.SettleIn(Destination);
-//					near = Neighbours;
-//					Destination = near[_rand.Next(near.Count)];
-//				}
-//				if (Destination.HasKrakenRadiation)
-//					this.FireAt(Destination);
-//			}
+			if (Current.HasKrakenRadiation)
+				if (_rand.Next(100) < _rand.Next(100))
+					this.FireAt(Destination);
 
 			return this.SettleIn(Destination, restart);
 		}

@@ -23,7 +23,8 @@ namespace EscapeMission
 			while (open.Count > 0)
 			{
 				var current = open.Dequeue();
-				if (current.Location == from.Location)
+				if (current.Location == from.Location
+				    || (field[current.Location.X, current.Location.Y, current.Location.Z] == 4 && current.Next != null))
 					return GetPathFor(current, field, out boom);
 
 				closed.Add(current);
@@ -70,8 +71,8 @@ namespace EscapeMission
 		/// <param name="to"></param>
 		/// <returns></returns>
 		public static int EstimatePathLength(Vector from, Vector to)
-//			=> 0;
-//			=> ((from.X * from.X - to.X * to.X) + (from.Y * from.Y - to.Y * to.Y) + (from.Z * from.Z - to.Z * to.Z));
+			//			=> 0;
+			//			=> ((from.X * from.X - to.X * to.X) + (from.Y * from.Y - to.Y * to.Y) + (from.Z * from.Z - to.Z * to.Z));
 			=> Abs(from.X - to.X) + Abs(from.Y - to.Y) + Abs(from.Z - to.Z);
 
 		/// <summary>

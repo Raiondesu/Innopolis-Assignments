@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 
 namespace EscapeMission
@@ -8,12 +9,13 @@ namespace EscapeMission
         public static void Main(string[] args)
 			=> Escape(
 				args.Contains("test") ?
-					Matrix.Generate() : new Matrix("input.txt", 10, 10, 1),
+					Matrix.Generate() : new Matrix("input.txt", 100, 100, 100),
 				args.Contains("log")
 			);
 
 	    public static void Escape(Matrix matrix, bool log = false)
 	    {
+		    StreamWriter file = File.CreateText("output.txt");
 		    Ship pod = new Ship(matrix, log);
 
 		    if (pod.Escape(Ship.Algorithms.AStar))
@@ -23,13 +25,13 @@ namespace EscapeMission
 			    {
 				    var cell = pod.Path[i];
 				    string result = i == pod.bombedCellIndex ? "M " : "";
-				    result += $"{cell.Location.X} {cell.Location.Y} {cell.Location.Z}";
-				    if (i == pod.bombedCellIndex)
-				    Console.WriteLine(result);
+				    result += $"{cell.Location.X} {cell.Location.Y} {cell.Location.Z}\n";
+
+				    file.Write(result);
 			    }
-			    Console.WriteLine($"{pod.Watch.ElapsedMilliseconds}ms");
+			    file.Write($"{pod.Watch.ElapsedMilliseconds}ms\n");
 		    }
-			else Console.WriteLine("No way there is!");
+			else file.Write("No way there is!\n");
 	    }
     }
 }
