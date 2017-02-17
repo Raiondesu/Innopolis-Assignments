@@ -26,8 +26,10 @@ namespace EscapeMission
 		public Matrix.Cell Previous => Path.Count < 2 ? null : Path[Path.Count - 2];
 		public Matrix.Cell Destination { get; private set; }
 
+		public Dictionary<Vector, Matrix.Cell> Visited { get; } = new Dictionary<Vector, Matrix.Cell>();
+
 		public List<Matrix.Cell> Path { get; } = new List<Matrix.Cell>();
-		public List<Matrix.Cell> Visited { get; } = new List<Matrix.Cell>();
+		public int bombedCellIndex { get; private set; }
 		public List<Matrix.Cell> UnknownNeighbours => this.Neighbours.FindAll(c => !c.Visited);
 		public List<Matrix.Cell> Neighbours
 		{
@@ -61,7 +63,10 @@ namespace EscapeMission
 
 		private int SettleIn(Matrix.Cell cell, bool restart = false)
 		{
-			this.Visited.Add(cell);
+			if (cell == null)
+				return 0;
+			if (!this.Visited.ContainsKey(cell.Location))
+				this.Visited.Add(cell.Location, cell);
 			this.Path.Add(cell);
 			this.Yarn.Push(cell);
 
@@ -93,13 +98,20 @@ namespace EscapeMission
 			if (Destination.Location == Current.Location)
 				return 0;
 
-			var path = ASStar.FindPath(Current, Destination, Map.Cells);
+			Vector boomLocaton;
+
+			var path = ASStar.FindPath(Current, Destination, Map.Cells, out boomLocaton);
 
 			if (path == null)
 			{
 				this.Deaths++;
 				return -1;
 			}
+
+			if (path.Any(c => c.Location == boomLocaton))
+				this.bombedCellIndex = path.IndexOf(path.First(c => c.Location == boomLocaton));
+			else
+				this.bombedCellIndex = -1;
 
 			this.Path.AddRange(path);
 
@@ -118,17 +130,17 @@ namespace EscapeMission
 				do Destination = near[_rand.Next(near.Count)];
 				while (!Destination.IsEmpty);
 
-			if (this.Deaths >= DeathLimit - 1) // If we approach death...
-			{
-				if (Destination.IsEmpty || !Destination.HasRadiation)
-				{
-					this.SettleIn(Destination);
-					near = Neighbours;
-					Destination = near[_rand.Next(near.Count)];
-				}
-				if (Destination.HasKrakenRadiation)
-					this.FireAt(Destination);
-			}
+//			if (this.Deaths >= DeathLimit - 1) // If we approach death...
+//			{
+//				if (Destination.IsEmpty || !Destination.HasRadiation)
+//				{
+//					this.SettleIn(Destination);
+//					near = Neighbours;
+//					Destination = near[_rand.Next(near.Count)];
+//				}
+//				if (Destination.HasKrakenRadiation)
+//					this.FireAt(Destination);
+//			}
 
 			return this.SettleIn(Destination, restart);
 		}
@@ -152,21 +164,45 @@ namespace EscapeMission
 
 		private int Risk()
 		{
-			var krakensR = this.Visited.FindAll(c => c.HasKrakenRadiation && c.IsEmpty);
+			List<Matrix.Cell> krakensR
+				= new List<Matrix.Cell>(this.Visited.Values)
+					.FindAll(c => c.HasKrakenRadiation && c.IsEmpty);
 			List<Matrix.Cell> krakens = null;
-			for (var i = 0; i < krakensR.Count && krakens == null; i++)
+			var i = 0;
+			foreach (var krakensO in krakensR)
 			{
-				Destination = krakensR[i];
+				Destination = krakensO;
 
 				this.MoveToDestination();
 
 				krakens = this.Neighbours.FindAll(c => c.HasKraken);
 
-				if (krakens.Count == 0) krakens = null;
+				for (i = krakens.Count; i > 0; i--)
+				{
+					var k = krakens[i - 1];
+
+					if (k.X + 1 < Map.Size.X && !Map.Cells[k.X + 1, k.Y, k.Z].Visited)
+						break;
+					if (k.X - 1 >= 0 && !Map.Cells[k.X - 1, k.Y, k.Z].Visited)
+						break;
+					if (k.Y + 1 < Map.Size.Y && !Map.Cells[k.X, k.Y + 1, k.Z].Visited)
+						break;
+					if (k.Y - 1 >= 0 && !Map.Cells[k.X, k.Y - 1, k.Z].Visited)
+						break;
+					if (k.Z + 1 < Map.Size.Z && !Map.Cells[k.X, k.Y, k.Z + 1].Visited)
+						break;
+					if (k.Z - 1 >= 0 && !Map.Cells[k.X, k.Y, k.Z - 1].Visited)
+						break;
+				}
+
+				if (0 == i) krakens = null;
 				else break;
 			}
 
-			var kraken = krakens?[0];
+			if (krakens == null)
+				return Risk();
+
+			var kraken = krakens[i - 1];
 
 			if (this.FireAt(kraken))
 			{
@@ -181,6 +217,8 @@ namespace EscapeMission
 		{
 			if (this._hasBomb && danger != null && !danger.HasBlackHole)
 			{
+				this.Path.Add(danger);
+				this.bombedCellIndex = this.Path.Count - 1;
 				danger.Occupant = Matrix.OccupantType.Empty;
 				this._hasBomb = false;
 				return true;

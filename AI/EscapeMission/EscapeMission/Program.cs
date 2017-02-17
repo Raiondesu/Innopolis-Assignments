@@ -16,11 +16,17 @@ namespace EscapeMission
 	    {
 		    Ship pod = new Ship(matrix, log);
 
-		    if (pod.Escape(Ship.Algorithms.Random))
+		    if (pod.Escape(Ship.Algorithms.AStar))
 		    {
 			    Console.WriteLine(pod.Path.Count);
-//				foreach (var cell in pod.Path)
-//					Console.WriteLine($"{cell.Location.X} {cell.Location.Y} {cell.Location.Z}");
+			    for (var i = 0; i < pod.Path.Count; i++)
+			    {
+				    var cell = pod.Path[i];
+				    string result = i == pod.bombedCellIndex ? "M " : "";
+				    result += $"{cell.Location.X} {cell.Location.Y} {cell.Location.Z}";
+				    if (i == pod.bombedCellIndex)
+				    Console.WriteLine(result);
+			    }
 			    Console.WriteLine($"{pod.Watch.ElapsedMilliseconds}ms");
 		    }
 			else Console.WriteLine("No way there is!");
