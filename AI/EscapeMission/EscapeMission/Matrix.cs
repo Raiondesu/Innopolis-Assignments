@@ -143,8 +143,7 @@ namespace EscapeMission
 
 			public override string ToString() => $"[{X}, {Y}, {Z}] = {this.CellToString()}";
 
-			public static implicit operator int(Cell cell)
-				=> (int) (cell.Visited ? cell.Occupant : OccupantType.Unknown);
+			public static implicit operator int(Cell cell) => (int) cell.Occupant;
 		}
 
 		[Flags]
