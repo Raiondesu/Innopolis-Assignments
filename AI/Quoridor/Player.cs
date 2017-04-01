@@ -1,5 +1,7 @@
 namespace Quoridor
 {
+	using Algorithms;
+	
 	public class Player
 	{
 		public Player(string name, Algorithm algorithm, int wallsAmount = Defaults.WallsAmount)

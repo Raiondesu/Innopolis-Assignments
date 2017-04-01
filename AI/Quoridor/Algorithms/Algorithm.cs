@@ -1,4 +1,4 @@
-namespace Quoridor
+namespace Quoridor.Algorithms
 {
 	public abstract class Algorithm
 	{

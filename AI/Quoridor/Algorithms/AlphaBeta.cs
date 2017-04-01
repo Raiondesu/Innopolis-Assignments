@@ -1,4 +1,4 @@
-namespace Quoridor
+namespace Quoridor.Algorithms
 {
 	public class AlphaBeta : MinMax
 	{
