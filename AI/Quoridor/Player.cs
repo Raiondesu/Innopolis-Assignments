@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 
 namespace Quoridor
 {
@@ -7,13 +6,12 @@ namespace Quoridor
 
 	public class Player : IFormattable
 	{
-		public Player(string name, Type algorithm, int wallsAmount = Defaults.WallsAmount)
+		public Player(string name, Type algorithm, Board board, int wallsAmount = Defaults.WallsAmount)
 		{
-			this.Name = name;
+			this.Name = name ?? "Nobody";
 			this.WallsAmount = wallsAmount;
-			this.PlayAlgorithm = (algorithm ?? Defaults.Algorithm)
-				.GetConstructor(new [] { typeof(Player) })
-				?.Invoke(new [] { this }) as Algorithm;
+			this.GameBoard = board ?? new Board();
+			this.PlayAlgorithm = algorithm.Construct(this) as Algorithm;
 		}
 
 		public string Name { get; private set; }
@@ -33,6 +31,6 @@ namespace Quoridor
 		}
 
 		public string ToString(string format, IFormatProvider formatProvider)
-			=> $"{this.Name} ({(format == "G" ? this.PlayAlgorithm.Name : this.PlayAlgorithm.ShortName)})";
+			=> $"{this.Name} ({(format == "G" ? this.PlayAlgorithm?.Name : this.PlayAlgorithm?.ShortName)})";
 	}
 }
