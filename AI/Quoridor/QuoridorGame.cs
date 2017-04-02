@@ -43,7 +43,7 @@ namespace Quoridor
 				if (i == game.Players.Length - 1) Console.Write(" and ");
 				else if (i > 0) Console.Write(", ");
 				var player = game.Players[i];
-				Console.Write($"{player.Name} ({player.PlayAlgorithm.ShortName})");
+				Console.Write(player);
 			}
 			Console.WriteLine("!\nSo, who's gonna win???");
 

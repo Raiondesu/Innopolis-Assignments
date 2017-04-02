@@ -4,7 +4,7 @@ namespace Quoridor.Algorithms
 	{
 		public AlphaBeta(Player user) : base(user) {}
 
-		public override string Name => base.Name + " with aplha-beta prunning";
+		public override string Name => base.Name + " with aplha-beta pruning";
 		public override string ShortName => base.ShortName + " w/ABP";
 	}
 }

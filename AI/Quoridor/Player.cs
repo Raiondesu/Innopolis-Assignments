@@ -5,7 +5,7 @@ namespace Quoridor
 {
 	using Algorithms;
 
-	public class Player
+	public class Player : IFormattable
 	{
 		public Player(string name, Type algorithm, int wallsAmount = Defaults.WallsAmount)
 		{
@@ -31,5 +31,8 @@ namespace Quoridor
 			if (loc >= 0 && loc <= GameBoard.Size2D)
 				this.Location = loc;
 		}
+
+		public string ToString(string format, IFormatProvider formatProvider)
+			=> $"{this.Name} ({(format == "G" ? this.PlayAlgorithm.Name : this.PlayAlgorithm.ShortName)})";
 	}
 }

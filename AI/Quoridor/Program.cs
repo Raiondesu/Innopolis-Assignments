@@ -6,10 +6,10 @@
 		{
 			var gameStats = QuoridorGame.Play(new Board(),
 				("Donald", typeof(Algorithms.AlphaBeta)),
-				("Hillary", typeof(Algorithms.AlphaBeta))
+				("Hillary", typeof(Algorithms.MonteCarlo))
 			);
 
-			System.Console.WriteLine(gameStats.Winner.Name);
+			System.Console.WriteLine($"Congrats to {gameStats.Winner}!");
 		}
 	}
 }
