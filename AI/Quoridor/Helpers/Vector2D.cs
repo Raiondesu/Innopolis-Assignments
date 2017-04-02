@@ -14,9 +14,8 @@ namespace Quoridor
 		public int X { get => (int)this.v.X; set => this.v = new Vector2D(value, Y); }
 		public int Y { get => (int)this.v.Y; set => this.v = new Vector2D(X, value); }
 
+		public bool FitsIn(Vector2D bounds)	=> this > 0 && this < bounds;
 		public Vector2D Clamp(Vector2D min, Vector2D max) => this < min ? min : this > max ? max : this;
-		public bool FitsIn(Vector2D bounds)
-			=> this > 0 && this < bounds;
 
 		public static readonly Vector2D Zero = new Vector2D(0);
 		public static readonly Vector2D Unit = new Vector2D(1);

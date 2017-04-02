@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,20 +19,23 @@ namespace Quoridor
 			
 			public bool TryAddWall(Player player, Wall wall)
 			{
-				if (wall.Fits(this.Size2D) && !Walls.Values.All(l => l.Contains(wall)))
+				if (wall.Fits(this.Size2D) && !Walls.Values.All(l => l.Contains(wall) && l.All(w => !w.Intersects(wall))))
 				{
 					this.Walls[player].Add(wall);
 					return true;
 				} else return false;
 			}
 
-			public static readonly Board Empty = new Board();
-
-			internal bool HasObstacleBetween(Player player, Vector2D loc)
+			internal bool TryStepOn(Player player, Vector2D loc)
 			{
-				var avg = (player.Location + loc) / 2;
-				return this.Walls[player].Any(w => w.Center == avg || w.Start == avg || w.End == avg);
+				return loc.FitsIn(this.Size2D) && this.Walls.All(k =>
+					k.Value.All(w =>
+						!w.LiesOn(loc)
+					)
+				);
 			}
+
+			public static readonly Board Empty = new Board();
 		}
 
 		private Board _board;

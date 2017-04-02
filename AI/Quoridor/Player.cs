@@ -20,22 +20,28 @@ namespace Quoridor
 		public QuoridorGame.Board Board { get; }
 		public Algorithm PlayAlgorithm { get; }
 		public Vector2D Location { get; private set; } = new Vector2D();
-		public bool HasWon => System.Math.Abs(this.Location.Y - Board.Size) == Board.Size - this.Location.Y;
+		private Vector2D Initial { get; set; } = new Vector2D();
+		public bool HasWon => System.Math.Abs((this.Initial.Y - 1) - (this.Location.Y + 1)) == Board.Size;
 
 		public void SetInitial(Vector2D initLocation)
 			=> this.Location = this.Steps == 0 ? initLocation : this.Location;
 
 		public void Step(Vector2D mUnitVector)
-			=> this.Move(mUnitVector.Clamp(-Vector2D.Unit, Vector2D.Unit) * 2);
+		{
+			if (this.Move(mUnitVector.Clamp(-Vector2D.Unit, Vector2D.Unit)))
+				this.Move(mUnitVector.Clamp(-Vector2D.Unit, Vector2D.Unit));
+			else
+				this.Location -= mUnitVector.Clamp(-Vector2D.Unit, Vector2D.Unit);
+		}
 
 		public bool Move(Vector2D mVector)
 		{
 			var loc = this.Location + mVector;
-			if (loc > 0 && loc < Board.Size2D && !Board.HasObstacleBetween(this, loc))
+			if (this.Board.TryStepOn(this, loc))
 			{
 				this.Location = loc;
 				this.Steps++;
-			} else Console.WriteLine("error");
+			}
 
 			return this.HasWon;
 		}
@@ -65,7 +71,7 @@ namespace Quoridor
 			get
 			{
 				var b = QuoridorGame.Board.Empty;
-				return new Player(null, null, ref b);
+				return new Player(null, typeof(Empty), ref b);
 			}
 		}
 	}

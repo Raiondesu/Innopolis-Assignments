@@ -38,16 +38,28 @@ namespace Quoridor
 			Divide(Players.Take(Players.Length / 2).ToArray(), (BoardSize + 1), 1);
 			Divide(Players.Skip(Players.Length / 2).ToArray(), (BoardSize + 1), BoardSize);
 			
-			this.Players[0].PlaceWall(new Wall(6, 6));
+			this.Players[0].PlaceWall(new Wall(10, 12, true));
 			this.Players[1].PlaceWall(new Wall(10, 2));
 			this.Players[0].Step(Player.Up);
 			this.Players[1].PlaceWall(new Wall(6, 2));
 			this.Players[0].PlaceWall(new Wall(6, 16));
+			this.Players[1].Step(Player.Down);
+			this.Players[0].Step(Player.Right);
+			this.Players[1].Step(Player.Down);
+			this.Players[0].PlaceWall(new Wall(2, 12));
+			this.Players[0].PlaceWall(new Wall(6, 12));
+			this.Players[0].PlaceWall(new Wall(6, 12));
+			this.Players[0].PlaceWall(new Wall(8, 12));
+			this.Players[0].PlaceWall(new Wall(10, 12));
+			this.Players[0].PlaceWall(new Wall(12, 12));
+			this.Players[0].PlaceWall(new Wall(14, 12));
+			this.Players[0].PlaceWall(new Wall(16, 12));
+			this.Players[0].PlaceWall(new Wall(18, 12));
 			this.Print();
 
 			//TODO - make'em actually play... v_v
 			await Task.Delay(1000);
-			return this.Players.First(p => p.HasWon);
+			return this.Players.Any(p => p.HasWon) ? this.Players.First(p => p.HasWon) : Player.Nobody;
 		}
 
 		public static QuoridorGame Play(int board, params (string Name, Type Algorithm)[] players)

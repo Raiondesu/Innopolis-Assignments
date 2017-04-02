@@ -9,4 +9,12 @@ namespace Quoridor.Algorithms
 
 		public Player User { get; protected set; }
 	}
+
+	public class Empty : Algorithm
+	{
+		public Empty(Player user) : base(user) {}
+
+		public override string Name => null;
+		public override string ShortName => null;
+	}
 }

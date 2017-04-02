@@ -44,11 +44,18 @@ namespace Quoridor
 						else Console.ForegroundColor = ConsoleColor.Red;
 						var wl = wa.Value.Find(w => w.LiesOn(new Vector2D(x, y)));
 						if (wl.IsVertical)
-							Console.Write(" │ ");
+						{
+							// if (y % 2 == 0 && x % 2 == 0)
+							// 	Console.Write("─┼─");
+							// else
+								Console.Write(" │ ");
+						}
 						else
 						{
-							Console.Write("─────────");
-							x += 2;
+							// if (y % 2 == 0 && x % 2 == 0)
+							// 	Console.Write("─┼─");
+							// else
+								Console.Write("───");
 						}
 						Console.ResetColor();
 					}
@@ -77,15 +84,15 @@ namespace Quoridor
 
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.Write("\t");
-			if (p1_walls >= 1) Console.Write("│ ");
+			if (p1_walls > 0) Console.Write("│ ");
 			for (int i = 0; i <= this.BoardSize; i++)
 				Console.Write(i % 2 != 0 && i < (p1_walls - 1) * 2 ? " │ " : "   ");
 			Console.Write("\n\t");
-			if (p1_walls >= 1) Console.Write("│ ");
+			if (p1_walls >= 0) Console.Write("│ ");
 			for (int i = 0; i <= this.BoardSize; i++)
 				Console.Write(i % 2 != 0 && i < (p1_walls - 1) * 2 ? " │ " : "   ");
 			Console.Write("\n\t");
-			if (p1_walls >= 1) Console.Write("│ ");
+			if (p1_walls >= 0) Console.Write("│ ");
 			for (int i = 0; i <= this.BoardSize; i++)
 				Console.Write(i % 2 != 0 && i < (p1_walls - 1) * 2 ? " │ " : "   ");
 			
