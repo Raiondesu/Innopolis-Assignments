@@ -4,7 +4,7 @@
 	{
 		static void Main(string[] args)
 		{
-			var gameStats = QuoridorGame.Play(new Board(),
+			var gameStats = QuoridorGame.Play(9,
 				("Donald", typeof(Algorithms.AlphaBeta)),
 				("Hillary", typeof(Algorithms.MonteCarlo))
 			); //US elections 2016 racing simulator
