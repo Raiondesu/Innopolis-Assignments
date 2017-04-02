@@ -15,8 +15,9 @@ namespace Quoridor
 				this.Players[i] = new Player(players[i].Name, players[i].Algorithm, board);
 		}
 
-		private async Task<Player> PlayInternal()
+		private async Task<Player> PlayAsync()
 		{
+			//TODO - make'em actually play... v_v
 			await Task.Delay(1000);
 			return this.Players[0];
 		}
@@ -33,7 +34,7 @@ namespace Quoridor
 			
 			var game = new QuoridorGame(board, players);
 			
-			game._battle = game.PlayInternal();	//Magic
+			game._battle = game.PlayAsync();	//Magic
 
 			Console.Write("Started a huuge play between ");
 			for (int i = 0; i < game.Players.Length; i++)
