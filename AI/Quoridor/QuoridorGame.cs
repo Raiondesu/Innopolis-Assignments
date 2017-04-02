@@ -7,12 +7,16 @@ namespace Quoridor
 	{
 		private Task<Player> _battle;
 
-		public QuoridorGame(params Player[] players)
+		private QuoridorGame(Board board, params (string Name, Type Algorithm)[] players)
 		{
-			this.Players = players;
+			this.GameBoard = board;
+			this.Players = new Player[players.Length];
+			for (int i = 0; i < players.Length; i++)
+				this.Players[i] = new Player(players[i].Name, players[i].Algorithm);
 		}
 
 		public Player[] Players { get; private set; }
+		public Board GameBoard { get; private set; }
 		public Player Winner
 		{
 			get
@@ -24,12 +28,12 @@ namespace Quoridor
 			}
 		}
 
-		public static void Play(params Player[] players)
+		public static QuoridorGame Play(Board board, params (string Name, Type Algorithm)[] players)
 		{
 			Console.WriteLine("Hello, spectator!");
 			Console.WriteLine("We're starting the Quoridor Game!");
 			
-			var game = new QuoridorGame(players);
+			var game = new QuoridorGame(board, players);
 			
 			game._battle = game.PlayInternal();	//Magic
 
@@ -44,6 +48,8 @@ namespace Quoridor
 			Console.WriteLine("!\nSo, who's gonna win???");
 
 			Console.WriteLine($"The winner is...\n{game.Winner.Name}!!!");
+
+			return game;
 		}
 
 		private async Task<Player> PlayInternal()

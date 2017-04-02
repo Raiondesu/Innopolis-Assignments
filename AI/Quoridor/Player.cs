@@ -19,7 +19,6 @@ namespace Quoridor
 		public string Name { get; private set; }
 		public int WallsAmount { get; private set; }
 		public Algorithm PlayAlgorithm { get; private set; }
-		public Type AlgorithmType { get; private set; }
 		public Board GameBoard { get; private set; }
 		public Vector2D Location { get; private set; }
 

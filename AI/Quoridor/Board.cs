@@ -7,5 +7,7 @@ namespace Quoridor
 		
 		public int Size { get; private set; }
 		public Vector2D Size2D => new Vector2D(this.Size);
+
+		public Player[] Players { get; set; }
 	}
 }

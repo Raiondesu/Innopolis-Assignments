@@ -4,10 +4,12 @@
 	{
 		static void Main(string[] args)
 		{
-			QuoridorGame.Play(
-				new Player("Donald", typeof(Algorithms.AlphaBeta)),
-				new Player("Hillary", typeof(Algorithms.AlphaBeta))
+			var gameStats = QuoridorGame.Play(new Board(),
+				("Donald", typeof(Algorithms.AlphaBeta)),
+				("Hillary", typeof(Algorithms.AlphaBeta))
 			);
+
+			System.Console.WriteLine(gameStats.Winner.Name);
 		}
 	}
 }
