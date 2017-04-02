@@ -1,14 +1,12 @@
 ﻿namespace Quoridor
 {
-	using Algorithms;
-
 	class Program
 	{
 		static void Main(string[] args)
 		{
-			QuoridorGame.PlayGameOfTwo(
-				new Player("Hillary", new MonteCarlo()),
-				new Player("Donald", new MonteCarlo())
+			QuoridorGame.Play(
+				new Player("Donald", typeof(Algorithms.AlphaBeta)),
+				new Player("Hillary", typeof(Algorithms.AlphaBeta))
 			);
 		}
 	}

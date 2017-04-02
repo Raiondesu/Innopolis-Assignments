@@ -1,5 +1,7 @@
 # A simple OOP implementation of a Quoridor game
 
+> Built with C# and .NET Core
+
 ## Install
 [.NET Core CLI](https://www.microsoft.com/net/core)
 

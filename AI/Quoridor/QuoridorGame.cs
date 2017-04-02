@@ -5,7 +5,7 @@ namespace Quoridor
 {
 	public class QuoridorGame
 	{
-		private Task<Player> _getWinner;
+		private Task<Player> _battle;
 
 		public QuoridorGame(params Player[] players)
 		{
@@ -13,21 +13,25 @@ namespace Quoridor
 		}
 
 		public Player[] Players { get; private set; }
-		public Player Winner => _getWinner.Result;
-
-		public async void Play()
+		public Player Winner
 		{
-			throw new System.NotImplementedException();
+			get
+			{
+				if (_battle == null)
+					return new Player("Nobody", null);
+				_battle.Wait();
+				return _battle.Result;
+			}
 		}
 
-		public static void PlayGameOfTwo(Player player1, Player player2)
+		public static void Play(params Player[] players)
 		{
 			Console.WriteLine("Hello, spectator!");
 			Console.WriteLine("We're starting the Quoridor Game!");
 			
-			var game = new QuoridorGame(player1, player2);
+			var game = new QuoridorGame(players);
 			
-			game.Play();	//Magic
+			game._battle = game.PlayInternal();	//Magic
 
 			Console.Write("Started a huuge play between ");
 			for (int i = 0; i < game.Players.Length; i++)
@@ -37,11 +41,15 @@ namespace Quoridor
 				var player = game.Players[i];
 				Console.Write($"{player.Name} ({player.PlayAlgorithm.ShortName})");
 			}
-			Console.WriteLine("!");
+			Console.WriteLine("!\nSo, who's gonna win???");
 
-			Console.WriteLine("So, who's gonna win???");
+			Console.WriteLine($"The winner is...\n{game.Winner.Name}!!!");
+		}
 
-			Console.WriteLine($"The winner is... {game.Winner.Name}!!!");
+		private async Task<Player> PlayInternal()
+		{
+			await Task.Delay(1000);
+			return this.Players[0];
 		}
 	}
 }
