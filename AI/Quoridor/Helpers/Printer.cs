@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace Quoridor
@@ -21,7 +20,6 @@ namespace Quoridor
 		private static (int X, int Y) initialPosition;
 		private static (int X, int Y) finalPosition;
 		private static Dictionary<string, (int loc, int idx)> scoreLocs = new Dictionary<string, (int loc, int idx)>();
-		private static List<Wall> walls = new List<Wall>();
 		
 	///Public:
 		static Printer()
