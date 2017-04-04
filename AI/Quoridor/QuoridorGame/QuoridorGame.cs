@@ -28,22 +28,41 @@ namespace Quoridor
 		{
 			//TODO - make'em actually play... v_v
 			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
+			await Task.Delay(1000);
 			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
-			Ally.TryPlaceWall((8, 6), false, ref Walls);
-			Opponent.TryPlaceWall((8, 8), true, ref Walls);
-			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
-			Ally.TryPlaceWall((10, 4), true, ref Walls);
-			Opponent.TryPlaceWall((12, 6), false, ref Walls);
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			Opponent.TryPlaceWall((10, 8), true, ref Walls);
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
+			await Task.Delay(1000);
 			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
 			await Task.Delay(1000);
-			return Player.Nobody;
+			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
+			await Task.Delay(1000);
+			// Ally.TryPlaceWall((8, 6), false, ref Walls);
+			await Task.Delay(1000);
+			Opponent.TryPlaceWall((8, 8), true, ref Walls);
+			await Task.Delay(1000);
+			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
+			await Task.Delay(1000);
+			Ally.TryPlaceWall((10, 4), true, ref Walls);
+			await Task.Delay(1000);
+			Opponent.TryPlaceWall((12, 6), false, ref Walls);
+			await Task.Delay(1000);
+			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
+			await Task.Delay(1000);
+			Opponent.TryPlaceWall((10, 8), true, ref Walls);
+			await Task.Delay(1000);
+			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
+			await Task.Delay(1000);
+			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
+			await Task.Delay(1000);
+			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
+			await Task.Delay(1000);
+			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
+			await Task.Delay(1000);
+			if (Ally.Location.Y == 1)
+				return Ally;
+			else if (Opponent.Location.Y == BoardSize - 1)
+				return Opponent;
+			else
+				return Player.Nobody;
 		}
 
 		public static QuoridorGame Play(Player ally, Player opponent)

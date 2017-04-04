@@ -53,7 +53,7 @@ namespace Quoridor
 			newLoc += direction;
 
 			if (opponent.Location == newLoc)
-				newLoc += direction;
+				newLoc += direction * 2;
 
 			bool result = false;
 			if (walls.Any(w => w.LiesOn(newLoc)))

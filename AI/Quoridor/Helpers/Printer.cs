@@ -52,7 +52,7 @@ namespace Quoridor
 		{
 			if (p.OldLocation != 0)
 				PrintLiteral($"   ", p.OldLocation, p.Color);
-			PrintLiteral($" {p.Name[0]} ", p.Location, p.Color);
+			PrintLiteral($"{p.Location.X >> 1}{p.Location.Y >> 1}", p.Location, p.Color);
 			UpdateCounters(p);
 		}
 		
