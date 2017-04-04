@@ -44,7 +44,7 @@ namespace Quoridor
 		public static implicit operator Vector2D((int X, int Y) v) => new Vector2D(v.X, v.Y);
 		public static implicit operator (int X, int Y)(Vector2D v) => (v.X, v.Y);
 
-		public override bool Equals(object other) => this.X == (other as Vector2D)?.X && this.Y == (other as Vector2D)?.Y;
+		public override bool Equals(object other) => this?.X == (other as Vector2D)?.X && this?.Y == (other as Vector2D)?.Y;
 		public string ToString(string format, IFormatProvider formatProvider) => $"[{X}, {Y}]";
 		public override int GetHashCode()
 		{

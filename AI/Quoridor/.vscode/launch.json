@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}\\bin\\Debug\\netcoreapp1.1\\Quoridor.dll",
+            "program": "${workspaceRoot}\\bin\\Debug\\netcoreapp1.1\\win10-x64\\Quoridor.dll",
             "args": [],
             "cwd": "${workspaceRoot}",
             "console": "internalConsole",

@@ -20,50 +20,46 @@ namespace Quoridor
 		}
 		private static (int X, int Y) initialPosition;
 		private static (int X, int Y) finalPosition;
-		private static List<(Player player, ConsoleColor color)> players = new List<(Player player, ConsoleColor color)>();
+		private static Dictionary<string, (int loc, int idx)> scoreLocs = new Dictionary<string, (int loc, int idx)>();
 		private static List<Wall> walls = new List<Wall>();
 		
 	///Public:
 		static Printer()
 		{
 			Console.OutputEncoding = Encoding.UTF8;
-			Printer.boardSize = (Settings.BoardSize << 1);
-			if (Settings.PrintFiledInline)
-				Printer.PrintFieldInline(Settings.FieldColor);
-			else
-				Printer.PrintField(Settings.FieldColor);
+			boardSize = (Settings.BoardSize << 1);
+			PrintFieldInline(Settings.FieldColor);
 		}
 
-		public static void Print(this Wall w)
+		public static void Print(this Player p, Wall w)
 		{
+			var color = Settings.ColorizeWalls ? w.Color : Settings.FieldColor;
 			if (w.IsVertical)
 			{
-				Printer.PrintLiteral(" │ ", w.Start, w.Color);
-				Printer.PrintLiteral(" • ", w.Center, w.Color);
-				Printer.PrintLiteral(" │ ", w.End, w.Color);
+				PrintLiteral(" │ ", w.Start, color);
+				PrintLiteral(" • ", w.Center, color);
+				PrintLiteral(" │ ", w.End, color);
 			}
 			else
 			{
-				Printer.PrintLiteral("───", w.Start, w.Color);
-				Printer.PrintLiteral("╴•╶", w.Center, w.Color);
-				Printer.PrintLiteral("───", w.End, w.Color);
+				PrintLiteral("───", w.Start, color);
+				PrintLiteral("╴•╶", w.Center, color);
+				PrintLiteral("───", w.End, color);
 			}
+
+			UpdateCounters(p);
 		}
 
 		public static void Print(this Player p)
 		{
-			if (Printer.players?.Any(t => t.player == p) ?? false)
-			{
-				var playerId = Printer.players.IndexOf(Printer.players.First(t => t.player == p));
-				Printer.players[playerId] = (p, p.Color);
-			}
-			else Printer.players.Add((p, p.Color));
-
-			Printer.PrintLiteral($" {p.Name[0]} ", p.Location, p.Color);
+			if (p.OldLocation != 0)
+				PrintLiteral($"   ", p.OldLocation, p.Color);
+			PrintLiteral($" {p.Name[0]} ", p.Location, p.Color);
+			UpdateCounters(p);
 		}
 		
 	///Private:
-		private static void PrintLiteral(string line, Vector2D location, ConsoleColor color)
+		private static void PrintLiteral(string line, Vector2D location, ConsoleColor color = Settings.FieldColor)
 		{
 			Console.ForegroundColor = color;
 
@@ -71,89 +67,45 @@ namespace Quoridor
 			if (line.Length == 2) line = $"{line[0]} {line[1]}";
 
 			var internalLocation = (X: location.X * 3 - 2, Y: location.Y);
-			Printer.cursorPosition = (initialPosition.X + internalLocation.X, initialPosition.Y + internalLocation.Y);
+			cursorPosition = (initialPosition.X + internalLocation.X, initialPosition.Y + internalLocation.Y);
 			
 			Console.Write(line);
 			Console.ResetColor();
-			Printer.cursorPosition = finalPosition;
+			cursorPosition = finalPosition;
 		}
 
-		private static void PrintField(ConsoleColor color)
+		private static void UpdateCounters(Player p)
 		{
-			Console.ForegroundColor = color;
-			Console.Write("\n  ╔════");
-			for (int x = 0; x <= boardSize; x++)
-			{
-				Console.Write(x % 2 == 0 ? "═╤═" : "═══");
-			}
-			Console.Write("════╗\n");
-			Console.Write("  ║    ");
-			for (int x = 0; x <= boardSize; x++)
-				Console.Write(x % 2 == 0 ? " │ " : x >> 1 < 10 ? $" {x >> 1} " : $"{x >> 1} ");
-			Console.Write("    ║\n");
-			for (int y = 0; y <= boardSize; y++, Console.WriteLine())
-			{
-				Console.Write(y % 2 == 0 ? "  ╟───" : y >> 1 < 10 ? $"  ║  {y >> 1}" : $"  ║ {y >> 1}");
-				for (int x = 0; x <= boardSize; x++)
-				{
-					if (x == 0 || x == boardSize)
-					{
-						if (y != 0 && y != boardSize && y % 2 != 0)
-							Console.Write(x == 0 ? "  │ " : " │  ");
-						else if (y % 2 == 0 && !(y == 0 || y == boardSize))
-							Console.Write(x == 0 ? "──┤ " : " ├──");
-						else if (y == boardSize && x == 0)
-							Console.Write("──┼─");
-						else if ((y == 0 || y == boardSize) && x == boardSize)
-							Console.Write("─┼──");
-						else
-						{
-							Console.Write("──┼─");
-							// Console.Write(result);
-							Printer.initialPosition = (Console.CursorLeft - 1, Console.CursorTop);
-							// result = "";
-						}
-					}
-					else
-					{
-						if (y == 0)
-							Console.Write(x % 2 == 0 ? "─┴─" : "───");
-						else if (y == boardSize)
-							Console.Write(x % 2 == 0 ? "─┬─" : "───");
-						else if (y % 2 == 0 && x % 2 == 0)
-							Console.Write(" · ");
-						else
-							Console.Write("   ");
-					}
-				}
-				Console.Write(y % 2 == 0 ? "───╢" : "   ║");
-			}
-			Console.Write("  ║    ");
-			for (int x = 0; x <= boardSize; x++)
-				Console.Write(x % 2 == 0 ? " │ " : "   ");
-			Console.Write("    ║\n");
+			(int loc, int idx) l;
 
-			Console.Write("  ╚════");
-			for (int x = 0; x <= boardSize; x++)
+			if (!scoreLocs.ContainsKey(p.Name))
 			{
-				Console.Write(x % 2 == 0 ? "═╧═" : "═══");
+				scoreLocs.Add(p.Name, ((scoreLocs.Count % 2 == 0 ? -1 : boardSize + 1), scoreLocs.Count));
+				l = scoreLocs[p.Name];
+				PrintLiteral(p.Name[0].ToString(), (l.loc, -3), p.Color);
+				PrintLiteral("Walls", (l.loc + (l.idx % 2 == 0 ? -3 : 2), -1), p.Color);
+				PrintLiteral("Steps", (l.loc + (l.idx % 2 == 0 ? -3 : 2), boardSize + 1), p.Color);
 			}
-			Console.Write("════╝\n");
-			// Console.Write(result);
-			Printer.finalPosition = (0, Console.CursorTop + 1);
-			Console.ResetColor();
+
+			l = scoreLocs[p.Name];
+			
+			PrintLiteral($"{(p.WallsAmount)}", (l.loc, -1), p.Color);				
+			PrintLiteral($"{(p.Steps)}", (l.loc, boardSize + 1), p.Color);
 		}
 
 		private static void PrintFieldInline(ConsoleColor color)
 		{
 			Console.ForegroundColor = color;
 
-			var result = "\n  ╔════";
+			var result = "\n       -----";
+			for (int i = 0; i <= boardSize; i++)
+				result += "---";
+			result += "-----\n\n       ╔════";
 			for (int x = 0; x <= boardSize; x++)
 				result += x % 2 == 0 ? "═╤═" : "═══";
 
 			result += "════╗\n";
-			result += "  ║    ";
+			result += "       ║    ";
 			for (int x = 0; x <= boardSize; x++)
 				result += x % 2 == 0 ? " │ " : x >> 1 < 10 ? $" {x >> 1} " : $"{x >> 1} ";
 			result += "    ║\n";
@@ -161,9 +113,9 @@ namespace Quoridor
 			for (int y = 0; y <= boardSize; y++, result += "\n")
 			{
 				if (y % 2 == 0)
-					result += "  ╟───";
+					result += "       ╟───";
 				else
-					result += y >> 1 < 10 ? $"  ║  {y >> 1}" : $"  ║ {y >> 1}";
+					result += y >> 1 < 10 ? $"       ║  {y >> 1}" : $"       ║ {y >> 1}";
 
 				for (int x = 0; x <= boardSize; x++)
 				{
@@ -172,16 +124,18 @@ namespace Quoridor
 						if (y != 0 && y != boardSize && y % 2 != 0)
 							result += x == 0 ? "  │ " : " │  ";
 						else if (y % 2 == 0 && !(y == 0 || y == boardSize))
-							result += x == 0 ? "──┤ " : " ├──";
-						else if (y == boardSize && x == 0)
-							result += "──┼─";
-						else if ((y == 0 || y == boardSize) && x == boardSize)
+							result += x == 0 ? "──┤ " : " │  ";
+						else if (y == 0 && x == boardSize)
 							result += "─┼──";
+						else if (y == boardSize && x == 0)
+							result += "──┴─";
+						else if (y == boardSize && x == boardSize)
+							result += "─┴──";
 						else
 						{
 							result += "──┼─";
 							Console.Write(result);
-							Printer.initialPosition = (Console.CursorLeft - 1, Console.CursorTop);
+							initialPosition = (Console.CursorLeft - 1, Console.CursorTop);
 							result = "";
 						}
 					}
@@ -190,27 +144,27 @@ namespace Quoridor
 						if (y == 0)
 							result += x % 2 == 0 ? "─┴─" : "───";
 						else if (y == boardSize)
-							result += x % 2 == 0 ? "─┬─" : "───";
+							result += "───";
 						else if (y % 2 == 0 && x % 2 == 0)
 							result += " · ";
 						else
 							result += "   ";
 					}
 				}
-				result += y % 2 == 0 ? "───╢" : "   ║";
+				result += y == 0 || y == boardSize ? "───╢" : "   ║";
 			}
-			result += "  ║    ";
+			result += "       ║    ";
 			for (int x = 0; x <= boardSize; x++)
-				result += x % 2 == 0 ? " │ " : "   ";
+				result += "   ";
 			result += "    ║\n";
 
-			result += "  ╚════";
+			result += "       ╚════";
 			for (int x = 0; x <= boardSize; x++)
-				result += x % 2 == 0 ? "═╧═" : "═══";
+				result += "═══";
 			result += "════╝\n";
 
 			Console.Write(result);
-			Printer.finalPosition = (0, Console.CursorTop + 1);
+			finalPosition = (0, Console.CursorTop + 1);
 
 			Console.ResetColor();
 		}

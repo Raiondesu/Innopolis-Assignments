@@ -5,7 +5,18 @@ namespace Quoridor
 {
 	public class Player
 	{
-		private Vector2D location = new Vector2D();
+		protected Vector2D _location = new Vector2D();
+		protected Vector2D location
+		{
+			get => _location;
+			set
+			{
+				this.Steps++;
+				OldLocation = _location;
+				_location = value;
+				this.Print();
+			}
+		}
 
 		public Player(string name, int depth = Settings.Depth, int wallsAmount = Settings.WallsAmount)
 		{
@@ -13,21 +24,25 @@ namespace Quoridor
 			this.WallsAmount = wallsAmount;
 		}
 
-		public virtual string Name { get; protected set; }
-		public int Steps { get; private set; } = 0;
-		public int Depth { get; private set; }
-		public int WallsAmount { get; private set; }
+		public virtual string Name { get; }
+		public int Steps { get; protected set; } = 0;
+		public int Depth { get; protected set; }
+		public int WallsAmount { get; protected set; }
 		public List<Wall> Walls { get; } = new List<Wall>();
 		public System.ConsoleColor Color { get; set; } = Settings.FieldColor;
+		public Vector2D OldLocation { get; protected set; } = null;
 		public Vector2D Location
 		{
 			get => location;
-			set => this.location = this.Steps == 0 ? value : this.location;
+			set
+			{
+				if (this.Steps == 0)
+					this.location = value;
+			}
 		}
 
 		public bool TryMove(Vector2D direction, int board, List<Wall> walls, Player opponent)
 		{
-			
 			direction = direction.Clamp(-1, 1);
 			var newLoc = this.location + direction;
 			newLoc = newLoc.Clamp(0, board);
@@ -57,15 +72,22 @@ namespace Quoridor
 				else return false;
 			}
 
-			this.location = newLoc + direction;
-			this.Steps++;
+			this.location = newLoc;
 			return result;
 		}
 
-		public bool TryPlaceWall(Wall wall, ref List<Wall> walls)
+		public bool TryPlaceWall(Vector2D position, bool isVertical, ref List<Wall> walls)
 		{
+			if (walls.Any(w => w.LiesOn(position)))
+				return false;
+
+			this.WallsAmount--;
+			this.Steps++;
+			Wall wall = new Wall(position, isVertical, this.Color);
+			walls.Add(wall);
+			this.Print(wall);
 			
-			return false;
+			return true;
 		}
 
 		public override string ToString() => $"{this.Name}";
@@ -74,7 +96,7 @@ namespace Quoridor
 		public override bool Equals (object obj)
 		{
 			Player other = obj as Player ?? Player.Nobody;
-			return this.Location == other.Location && this.Name == other.Name;
+			return this.Name == other.Name;
 		}
 		
 		// override object.GetHashCode

@@ -7,8 +7,6 @@ namespace Quoridor
 		public const int Depth = 2;
 
 		public const System.ConsoleColor FieldColor = System.ConsoleColor.White;
-		public static readonly bool PrintFiledInline = true;
-		
-		public static readonly System.Type Algorithm = typeof(Algorithms.MinMax);
+		public const bool ColorizeWalls = true;
 	}
 }

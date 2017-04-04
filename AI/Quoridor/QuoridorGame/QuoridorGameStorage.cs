@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Quoridor
 {
@@ -7,7 +6,7 @@ namespace Quoridor
 	{
 		public int BoardSize { get; }
 
-		public List<Wall> AllWalls = new List<Wall>();
+		public List<Wall> Walls = new List<Wall>();
 		public Player Ally { get; }
 		public Player Opponent { get; }
 	}
