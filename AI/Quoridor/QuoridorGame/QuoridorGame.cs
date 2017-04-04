@@ -35,7 +35,7 @@ namespace Quoridor
 			await Task.Delay(1000);
 			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
 			await Task.Delay(1000);
-			// Ally.TryPlaceWall((8, 6), false, ref Walls);
+			Ally.TryPlaceWall((8, 6), false, ref Walls);
 			await Task.Delay(1000);
 			Opponent.TryPlaceWall((8, 8), true, ref Walls);
 			await Task.Delay(1000);

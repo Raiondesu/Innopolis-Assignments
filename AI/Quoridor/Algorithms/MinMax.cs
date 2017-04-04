@@ -1,5 +1,3 @@
-using System;
-
 namespace Quoridor.Algorithms
 {
 	public class MinMax : AI

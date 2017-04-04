@@ -52,11 +52,14 @@ namespace Quoridor
 		{
 			if (p.OldLocation != 0)
 				PrintLiteral($"   ", p.OldLocation, p.Color);
-			PrintLiteral($"{p.Location.X >> 1}{p.Location.Y >> 1}", p.Location, p.Color);
+			PrintLiteral(p.Name[0], p.Location, p.Color);
 			UpdateCounters(p);
 		}
 		
 	///Private:
+		private static void PrintLiteral(char line, Vector2D location, ConsoleColor color = Settings.FieldColor)
+			=> PrintLiteral(line.ToString(), location, color);
+			
 		private static void PrintLiteral(string line, Vector2D location, ConsoleColor color = Settings.FieldColor)
 		{
 			Console.ForegroundColor = color;
