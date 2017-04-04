@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Quoridor
 {
@@ -6,7 +7,8 @@ namespace Quoridor
 	{
 		public int BoardSize { get; }
 
-		public List<Wall> Walls = new List<Wall>();
+		private List<Wall> walls = new List<Wall>();
+		public ImmutableList<Wall> Walls => walls.ToImmutableList();
 		public Player Ally { get; }
 		public Player Opponent { get; }
 	}

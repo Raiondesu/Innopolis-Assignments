@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace Quoridor
 {
-	public class Player
+	public abstract class Player
 	{
-		protected Vector2D _location = new Vector2D();
+		private Vector2D _location = new Vector2D();
 		protected Vector2D location
 		{
 			get => _location;
@@ -39,24 +39,26 @@ namespace Quoridor
 					this.location = value;
 			}
 		}
+		
+		public abstract bool Turn(int board, ref List<Wall> walls, Player opponent);
 
-		public virtual bool TryMove(Vector2D direction, int board, List<Wall> walls, Player opponent)
+		protected virtual bool TryMove(Vector2D direction, int board, List<Wall> walls, Player opponent)
 		{
-			direction = direction.Clamp(-1, 1);
 			var newLoc = this.location + direction;
 
-			if (walls.Any(w => w.LiesOn(newLoc)))
+			if (walls.Any(w => w.LiesOn(newLoc)) || !newLoc.FitsIn(1, board - 1))
 				return false;
-			
+
 			newLoc += direction;
 
 			if (opponent.Location == newLoc)
 				newLoc += direction * 2;
-
-			bool result = false;
-			if (walls.Any(w => w.LiesOn(newLoc)))
+			
+			var result = true;
+			if (walls.Any(w => w.LiesOn(newLoc - direction)))
 			{
-				newLoc -= direction;
+				result = false;
+				newLoc -= direction * 2;
 				if (!walls.Any(w => w.LiesOn(newLoc + direction.RotateLeft())))
 				{
 					newLoc += direction.RotateLeft() * 2;
@@ -67,22 +69,22 @@ namespace Quoridor
 					newLoc += direction.RotateRight() * 2;
 					result = true;
 				}
-				else return false;
 			}
 
-			newLoc = newLoc.Clamp(1, board - 1);
 			this.location = newLoc;
 			return result;
 		}
 
-		public virtual bool TryPlaceWall(Vector2D position, bool isVertical, ref List<Wall> walls)
+		protected virtual bool TryPlaceWall(Vector2D position, int board, bool isVertical, ref List<Wall> walls)
 		{
-			if (walls.Any(w => w.LiesOn(position)))
+			if (this.WallsAmount == 0) return false;
+
+			Wall wall = new Wall(position, isVertical);
+			if (!wall.Fits(board) || walls.Any(w => w.Intersects(wall)))
 				return false;
 
 			this.WallsAmount--;
 			this.Steps++;
-			Wall wall = new Wall(position, isVertical);
 			walls.Add(wall);
 			this.Print(wall);
 			
@@ -94,16 +96,14 @@ namespace Quoridor
 		// override object.Equals
 		public override bool Equals (object obj)
 		{
-			Player other = obj as Player ?? Player.Nobody;
-			return this.Name == other.Name;
+			Player other = obj as Player;
+			return this?.Name == other?.Name;
 		}
 		
 		// override object.GetHashCode
 		public override int GetHashCode() => base.GetHashCode();
 
-		public static bool operator ==(Player p1, Player p2) => p1.Equals(p2);
+		public static bool operator ==(Player p1, Player p2) => p1?.Equals(p2) ?? false;
 		public static bool operator !=(Player p1, Player p2) => !(p1 == p2);
-
-		public static Player Nobody => new Player(null);
 	}
 }

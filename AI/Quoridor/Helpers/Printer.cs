@@ -25,6 +25,7 @@ namespace Quoridor
 		static Printer()
 		{
 			Console.OutputEncoding = Encoding.UTF8;
+			Console.CursorVisible = false;
 			boardSize = (Settings.BoardSize << 1);
 			PrintFieldInline(Settings.FieldColor);
 		}

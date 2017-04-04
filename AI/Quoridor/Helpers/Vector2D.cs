@@ -10,11 +10,8 @@ namespace Quoridor
 		public int X { get; set; }
 		public int Y { get; set; }
 
-		public bool FitsIn(Vector2D bounds)
-			=> this.X > 0 && this.Y > 0 && this < bounds;
-
-		public Vector2D Clamp(Vector2D min, Vector2D max)
-			=> (this.X < min.X ? min.X : this.X > max.X ? max.X : this.X, this.Y < min.Y ? min.Y : this.Y > max.Y ? max.Y : this.Y);
+		public bool FitsIn(Vector2D min, Vector2D max)
+			=> this >= min && this <= max;
 
 		public Vector2D RotateLeft() => (-this.Y, this.X);
 		public Vector2D RotateRight() => (this.Y, -this.X);

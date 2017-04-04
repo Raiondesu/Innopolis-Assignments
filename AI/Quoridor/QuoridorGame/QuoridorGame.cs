@@ -6,7 +6,7 @@ namespace Quoridor
 	public partial class QuoridorGame
 	{
 		private Task<Player> _battle;
-		public Player Winner => _battle?.Result ?? Player.Nobody;
+		public Player Winner => _battle?.Result;
 
 		private QuoridorGame(Player ally, Player opponent)
 		{
@@ -33,53 +33,19 @@ namespace Quoridor
 				else if (Opponent.Location.Y == BoardSize - 1)
 					return Opponent;
 				else
-					return Player.Nobody;
+					return null;
 			}
+			bool hasWinner() => Ally.Location.Y == 1 || Opponent.Location.Y == BoardSize - 1;
 
 			//TODO - make'em actually play... v_v
-			Ally.TryMove(Directions.Down, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Ally.TryPlaceWall((6, 8), false, ref Walls);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryPlaceWall((8, 8), true, ref Walls);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Ally.TryPlaceWall((10, 4), true, ref Walls);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryPlaceWall((12, 6), false, ref Walls);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryPlaceWall((10, 8), true, ref Walls);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryMove(Directions.Down, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryMove(Directions.Down, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryMove(Directions.Down, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryMove(Directions.Down, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			Opponent.TryMove(Directions.Down, BoardSize, Walls, Opponent);
-			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
-			
+			do
+			{
+				await Task.Delay(50);
+				while (!Ally.Turn(BoardSize, ref walls, Opponent));
+				await Task.Delay(50);
+				while (!Opponent.Turn(BoardSize, ref walls, Ally));
+			} while (!hasWinner());
+
 			return checkWinner();
 		}
 
@@ -94,8 +60,8 @@ namespace Quoridor
 			
 			game._battle = game.PlayAsync();	//Magic
 
-			Console.ForegroundColor = game.Winner.Color;
-			Console.WriteLine($"The winner is...\n{game.Winner.Name}!!!");
+			Console.ForegroundColor = game.Winner?.Color ?? ConsoleColor.White;
+			Console.WriteLine($"The winner is...\n{game.Winner?.Name ?? "Nobody"}!!!");
 			Console.ResetColor();
 			return game;
 		}

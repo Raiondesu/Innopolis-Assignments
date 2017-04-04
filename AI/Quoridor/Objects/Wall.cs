@@ -26,7 +26,7 @@ namespace Quoridor
 		public bool IsVertical { get; }
 
 		public bool Fits(Vector2D bounds)
-			=> this.Start.FitsIn(bounds) && this.End.FitsIn(bounds) && this.Center.X % 2 == 0 && this.Center.Y % 2 == 0;
+			=> this.Start.FitsIn(2, bounds - 2) && this.End.FitsIn(2, bounds - 2) && this.Center.X % 2 == 0 && this.Center.Y % 2 == 0;
 
 		public bool LiesOn(Vector2D point)
 			=> this.Start == point || this.Center == point || this.End == point;
