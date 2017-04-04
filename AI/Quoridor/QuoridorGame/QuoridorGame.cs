@@ -15,9 +15,9 @@ namespace Quoridor
 			var rand = new System.Random();
 			var x = BoardSize / 2;
 
-			ally.Color = (ConsoleColor) rand.Next(1, 16);
+			ally.Color = Settings.PlayerColors[rand.Next(Settings.PlayerColors.Length)];
 			ally.Location = (x, BoardSize - 1);
-			opponent.Color = (ConsoleColor) rand.Next(1, 16);
+			opponent.Color = Settings.PlayerColors[rand.Next(Settings.PlayerColors.Length)];
 			opponent.Location = (x, 1);
 
 			this.Ally = ally;
@@ -26,43 +26,61 @@ namespace Quoridor
 
 		private async Task<Player> PlayAsync()
 		{
+			Player checkWinner()
+			{
+				if (Ally.Location.Y == 1)
+					return Ally;
+				else if (Opponent.Location.Y == BoardSize - 1)
+					return Opponent;
+				else
+					return Player.Nobody;
+			}
+
 			//TODO - make'em actually play... v_v
-			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000);
+			Ally.TryMove(Directions.Down, BoardSize, Walls, Opponent);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
-			await Task.Delay(1000);
-			Ally.TryPlaceWall((8, 6), false, ref Walls);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
+			Ally.TryPlaceWall((6, 8), false, ref Walls);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Opponent.TryPlaceWall((8, 8), true, ref Walls);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Opponent.TryMove(Directions.Down, BoardSize, Walls, Ally);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Ally.TryPlaceWall((10, 4), true, ref Walls);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Opponent.TryPlaceWall((12, 6), false, ref Walls);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Opponent.TryPlaceWall((10, 8), true, ref Walls);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
+			Opponent.TryMove(Directions.Down, BoardSize, Walls, Opponent);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
+			Opponent.TryMove(Directions.Down, BoardSize, Walls, Opponent);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
+			Opponent.TryMove(Directions.Down, BoardSize, Walls, Opponent);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
 			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
-			await Task.Delay(1000);
-			if (Ally.Location.Y == 1)
-				return Ally;
-			else if (Opponent.Location.Y == BoardSize - 1)
-				return Opponent;
-			else
-				return Player.Nobody;
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
+			Opponent.TryMove(Directions.Down, BoardSize, Walls, Opponent);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
+			Ally.TryMove(Directions.Up, BoardSize, Walls, Opponent);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
+			Opponent.TryMove(Directions.Down, BoardSize, Walls, Opponent);
+			await Task.Delay(1000); if (checkWinner() != Player.Nobody) return checkWinner();
+			
+			return checkWinner();
 		}
 
 		public static QuoridorGame Play(Player ally, Player opponent)

@@ -2,10 +2,9 @@ using System;
 
 namespace Quoridor
 {
-	public class Vector2D : IFormattable
+	public struct Vector2D : IFormattable
 	{
-		public Vector2D() : this(0) {}
-		public Vector2D(int c) : this(c, c) {}
+		public Vector2D(int c = 0) : this(c, c) {}
 		public Vector2D(int x, int y) { this.X = x; this.Y = y; }
 
 		public int X { get; set; }
@@ -44,7 +43,7 @@ namespace Quoridor
 		public static implicit operator Vector2D((int X, int Y) v) => new Vector2D(v.X, v.Y);
 		public static implicit operator (int X, int Y)(Vector2D v) => (v.X, v.Y);
 
-		public override bool Equals(object other) => this?.X == (other as Vector2D)?.X && this?.Y == (other as Vector2D)?.Y;
+		public override bool Equals(object other) => this.X == ((Vector2D)other).X && this.Y == ((Vector2D)other).Y;
 		public string ToString(string format, IFormatProvider formatProvider) => $"[{X}, {Y}]";
 		public override int GetHashCode()
 		{

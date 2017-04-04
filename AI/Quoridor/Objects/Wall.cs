@@ -4,11 +4,10 @@ namespace Quoridor
 {
 	public struct Wall
 	{
-		public Wall(Vector2D center, bool isVertical, ConsoleColor color = Settings.FieldColor)
+		public Wall(Vector2D center, bool isVertical)
 		{
 			this.Center = center;
 			this.IsVertical = isVertical;
-			this.Color = color;
 			if (isVertical)
 			{
 				this.Start = center + Directions.Up;
@@ -25,7 +24,6 @@ namespace Quoridor
 		public Vector2D Center { get; }
 		public Vector2D End { get; }
 		public bool IsVertical { get; }
-		public ConsoleColor Color { get; }
 
 		public bool Fits(Vector2D bounds)
 			=> this.Start.FitsIn(bounds) && this.End.FitsIn(bounds) && this.Center.X % 2 == 0 && this.Center.Y % 2 == 0;

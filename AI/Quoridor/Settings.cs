@@ -8,5 +8,19 @@ namespace Quoridor
 
 		public const System.ConsoleColor FieldColor = System.ConsoleColor.White;
 		public const bool ColorizeWalls = true;
+		public static readonly System.ConsoleColor[] PlayerColors = new [] 
+		{
+			System.ConsoleColor.Blue,
+			System.ConsoleColor.Cyan,
+			System.ConsoleColor.DarkBlue,
+			System.ConsoleColor.DarkCyan,
+			System.ConsoleColor.DarkGreen,
+			System.ConsoleColor.DarkRed,
+			System.ConsoleColor.DarkYellow,
+			System.ConsoleColor.Green,
+			System.ConsoleColor.Magenta,
+			System.ConsoleColor.Red,
+			System.ConsoleColor.Yellow,
+		};
 	}
 }

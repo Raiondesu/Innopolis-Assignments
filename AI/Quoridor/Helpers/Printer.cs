@@ -31,28 +31,29 @@ namespace Quoridor
 
 		public static void Print(this Player p, Wall w)
 		{
-			var color = Settings.ColorizeWalls ? w.Color : Settings.FieldColor;
-			if (w.IsVertical)
+			var color = Settings.ColorizeWalls ? p.Color : Settings.FieldColor;
+
+			void printWall(string start, string center, string end)
 			{
-				PrintLiteral(" │ ", w.Start, color);
-				PrintLiteral(" • ", w.Center, color);
-				PrintLiteral(" │ ", w.End, color);
-			}
-			else
-			{
-				PrintLiteral("───", w.Start, color);
-				PrintLiteral("╴•╶", w.Center, color);
-				PrintLiteral("───", w.End, color);
+				PrintLiteral(start, w.Start, color);
+				PrintLiteral(center, w.Center, color);
+				PrintLiteral(end, w.End, color);
 			}
 
+			if (w.IsVertical) printWall(" │ ", " • ", " │ ");
+			else printWall("───", "╴•╶", "───");
 			UpdateCounters(p);
 		}
 
 		public static void Print(this Player p)
 		{
 			if (p.OldLocation != 0)
+			{
 				PrintLiteral($"   ", p.OldLocation, p.Color);
+				PrintLiteral($"   ", (boardSize + 1, p.OldLocation.Y), p.Color);
+			}
 			PrintLiteral(p.Name[0], p.Location, p.Color);
+			PrintLiteral(p.Name[0], (boardSize + 1, p.Location.Y), p.Color);
 			UpdateCounters(p);
 		}
 		
@@ -77,21 +78,23 @@ namespace Quoridor
 
 		private static void UpdateCounters(Player p)
 		{
+			void printScore(string line, int xoffset)
+				=> PrintLiteral(line, (xoffset, boardSize + 1), p.Color);
+
 			(int loc, int idx) l;
 
 			if (!scoreLocs.ContainsKey(p.Name))
 			{
 				scoreLocs.Add(p.Name, ((scoreLocs.Count % 2 == 0 ? -1 : boardSize + 1), scoreLocs.Count));
 				l = scoreLocs[p.Name];
-				PrintLiteral(p.Name[0].ToString(), (l.loc, -3), p.Color);
-				PrintLiteral("Walls", (l.loc + (l.idx % 2 == 0 ? -3 : 2), -1), p.Color);
-				PrintLiteral("Steps", (l.loc + (l.idx % 2 == 0 ? -3 : 2), boardSize + 1), p.Color);
+				printScore(p.Name[0].ToString(), l.loc);
+				printScore("│", l.loc + (l.idx % 2 == 0 ? 1 : -1));
 			}
 
 			l = scoreLocs[p.Name];
 			
-			PrintLiteral($"{(p.WallsAmount)}", (l.loc, -1), p.Color);				
-			PrintLiteral($"{(p.Steps)}", (l.loc, boardSize + 1), p.Color);
+			printScore($" {(p.WallsAmount)} Walls ", l.loc + (l.idx % 2 == 0 ? 2 : -8));				
+			printScore($" {(p.Steps)} Steps ", l.loc + (l.idx % 2 == 0 ? 6 : -4));
 		}
 
 		private static void PrintFieldInline(ConsoleColor color)
@@ -145,7 +148,7 @@ namespace Quoridor
 						if (y == 0)
 							result += x % 2 == 0 ? "─┴─" : "───";
 						else if (y == boardSize)
-							result += "───";
+							result += x == boardSize / 2 ? "─┬─" : "───";
 						else if (y % 2 == 0 && x % 2 == 0)
 							result += " · ";
 						else
@@ -156,12 +159,12 @@ namespace Quoridor
 			}
 			result += "       ║    ";
 			for (int x = 0; x <= boardSize; x++)
-				result += "   ";
+				result += x == boardSize / 2 ? " │ " : "   ";
 			result += "    ║\n";
 
 			result += "       ╚════";
 			for (int x = 0; x <= boardSize; x++)
-				result += "═══";
+				result +=  x == boardSize / 2 ? "═╧═" : "═══";
 			result += "════╝\n";
 
 			Console.Write(result);

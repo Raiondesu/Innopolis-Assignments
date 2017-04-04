@@ -28,9 +28,8 @@ namespace Quoridor
 		public int Steps { get; protected set; } = 0;
 		public int Depth { get; protected set; }
 		public int WallsAmount { get; protected set; }
-		public List<Wall> Walls { get; } = new List<Wall>();
 		public System.ConsoleColor Color { get; set; } = Settings.FieldColor;
-		public Vector2D OldLocation { get; protected set; } = null;
+		public Vector2D OldLocation { get; protected set; } = 0;
 		public Vector2D Location
 		{
 			get => location;
@@ -41,11 +40,10 @@ namespace Quoridor
 			}
 		}
 
-		public bool TryMove(Vector2D direction, int board, List<Wall> walls, Player opponent)
+		public virtual bool TryMove(Vector2D direction, int board, List<Wall> walls, Player opponent)
 		{
 			direction = direction.Clamp(-1, 1);
 			var newLoc = this.location + direction;
-			newLoc = newLoc.Clamp(0, board);
 
 			if (walls.Any(w => w.LiesOn(newLoc)))
 				return false;
@@ -72,18 +70,19 @@ namespace Quoridor
 				else return false;
 			}
 
+			newLoc = newLoc.Clamp(1, board - 1);
 			this.location = newLoc;
 			return result;
 		}
 
-		public bool TryPlaceWall(Vector2D position, bool isVertical, ref List<Wall> walls)
+		public virtual bool TryPlaceWall(Vector2D position, bool isVertical, ref List<Wall> walls)
 		{
 			if (walls.Any(w => w.LiesOn(position)))
 				return false;
 
 			this.WallsAmount--;
 			this.Steps++;
-			Wall wall = new Wall(position, isVertical, this.Color);
+			Wall wall = new Wall(position, isVertical);
 			walls.Add(wall);
 			this.Print(wall);
 			
