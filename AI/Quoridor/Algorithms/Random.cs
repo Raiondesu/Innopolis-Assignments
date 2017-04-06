@@ -13,12 +13,15 @@ namespace Quoridor.Algorithms
 
 		public override string Name => base.Name + " (Random)";
 
-		public override bool Turn(ref Board board)
+		public override void Turn(ref Board board, int delay = 0)
 		{
 			var opponent = object.ReferenceEquals(this, board.Ally) ? board.Opponent : board.Ally;
-			return rand.Next(2) > 0 ?
+			var moveResult = rand.Next(2) > 0 ?
 				this.TryMove(board.Size, board.Walls, opponent)
 				: this.TryPlaceWall(ref board);
+			
+			if (!moveResult) this.Turn(ref board, delay);
+			
 		}
 
 		protected bool TryMove(int board, List<Wall> walls, Player opponent)

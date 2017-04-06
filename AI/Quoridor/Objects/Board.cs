@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Quoridor
 {
 	public class Board
 	{
-		private Task<Player> battle;
+		private Player winner;
 
 		public Board(ref Player ally, ref Player opponent, int size = Settings.BoardSize)
 		{
@@ -20,7 +19,7 @@ namespace Quoridor
 		public Player Opponent { get; }
 		public List<Wall> Walls { get; } = new List<Wall>();
 
-		public Player Winner => battle?.Result;
-		public void BeginBattle(Func<Task<Player>> rules) => battle = rules();
+		public Player Winner => winner;
+		public void BeginBattle(Func<Player> battle) => winner = battle();
 	}
 }

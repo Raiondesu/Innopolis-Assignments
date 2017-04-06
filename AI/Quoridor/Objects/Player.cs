@@ -40,7 +40,7 @@ namespace Quoridor
 			}
 		}
 		
-		public abstract bool Turn(ref Board board);
+		public abstract void Turn(ref Board board, int delay = 0);
 
 		protected virtual bool TryMove(Vector2D direction, int board, List<Wall> walls, Player opponent)
 		{

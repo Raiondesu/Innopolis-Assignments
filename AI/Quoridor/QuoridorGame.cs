@@ -21,7 +21,7 @@ namespace Quoridor
 
 		~QuoridorGame() => Console.CursorVisible = true;
 
-		private async Task<Player> PlayAsync()
+		private Player Battle()
 		{
 			Player checkWinner()
 			{
@@ -36,10 +36,8 @@ namespace Quoridor
 
 			do
 			{
-				await Task.Delay(500);
-				while (!board.Ally.Turn(ref this.board));
-				await Task.Delay(500);
-				while (!board.Opponent.Turn(ref this.board));
+				board.Ally.Turn(ref this.board, 500);
+				board.Opponent.Turn(ref this.board, 500);
 			} while (!hasWinner());
 
 			return checkWinner();
@@ -56,7 +54,7 @@ namespace Quoridor
 			
 			var game = new QuoridorGame(ref ally, ref opponent);
 			
-			game.board.BeginBattle(game.PlayAsync);	//Magic
+			game.board.BeginBattle(game.Battle);	//Magic
 
 			Console.ForegroundColor = game.board.Winner?.Color ?? ConsoleColor.White;
 			Console.WriteLine($"The winner is... {game.board.Winner?.Name ?? "Nobody"}!!!");

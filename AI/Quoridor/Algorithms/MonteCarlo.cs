@@ -10,7 +10,7 @@ namespace Quoridor.Algorithms
 
 		public override string Name => base.Name + " (Monte Carlo Tree Search)";
 
-		public override bool Turn(ref Board board)
+		public override void Turn(ref Board board, int delay)
 		{
 			throw new NotImplementedException();
 		}

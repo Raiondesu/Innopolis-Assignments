@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Quoridor.Algorithms
 {
@@ -10,7 +9,7 @@ namespace Quoridor.Algorithms
 
 		public override string Name => base.Name + " (Min-Max game tree)"; 
 
-		public override bool Turn(ref Board board)
+		public override void Turn(ref Board board, int delay = 0)
 		{
 			throw new NotImplementedException();
 		}
