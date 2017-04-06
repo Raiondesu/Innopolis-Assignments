@@ -13,13 +13,15 @@ namespace Quoridor.Algorithms
 
 		public override string Name => base.Name + " (Random)";
 
-		public override bool Turn(int board, ref List<Wall> walls, Player opponent)
+		public override bool Turn(ref Board board)
 		{
-			int move = rand.Next(2);
-			return move > 0 ? this.TryMove(board, walls, opponent) : this.TryPlaceWall(board, ref walls);
+			var opponent = object.ReferenceEquals(this, board.Ally) ? board.Opponent : board.Ally;
+			return rand.Next(2) > 0 ?
+				this.TryMove(board.Size, board.Walls, opponent)
+				: this.TryPlaceWall(ref board);
 		}
 
-		private bool TryMove(int board, List<Wall> walls, Player opponent)
+		protected bool TryMove(int board, List<Wall> walls, Player opponent)
 		{
 			var directions = new [] {
 				Directions.Up,
@@ -37,7 +39,7 @@ namespace Quoridor.Algorithms
 			return false;
 		}
 
-		private bool TryPlaceWall(int board, ref List<Wall> walls)
+		protected bool TryPlaceWall(ref Board board)
 		{
 			if (this.WallsAmount == 0) return false;
 
@@ -45,15 +47,10 @@ namespace Quoridor.Algorithms
 			bool isv = false;
 			do
 			{
-				wall = new Wall((rand.Next(1, board), rand.Next(1, board)), isv = Convert.ToBoolean(rand.Next(2)));
-			} while (walls.Any(w => w.Intersects(wall)));
+				wall = new Wall((rand.Next(1, board.Size), rand.Next(1, board.Size)), isv = Convert.ToBoolean(rand.Next(2)));
+			} while (board.Walls.Any(w => w.Intersects(wall)));
 
-			return base.TryPlaceWall(wall.Center, board, isv, ref walls);
+			return base.TryPlaceWall(wall.Center, isv, ref board);
 		}
-
-		// protected override Vector2D CalculateMove(int board, List<Wall> walls, Player opponent)
-		// {
-		// 	throw new NotImplementedException();
-		// }
 	}
 }

@@ -40,7 +40,7 @@ namespace Quoridor
 			}
 		}
 		
-		public abstract bool Turn(int board, ref List<Wall> walls, Player opponent);
+		public abstract bool Turn(ref Board board);
 
 		protected virtual bool TryMove(Vector2D direction, int board, List<Wall> walls, Player opponent)
 		{
@@ -52,58 +52,46 @@ namespace Quoridor
 			newLoc += direction;
 
 			if (opponent.Location == newLoc)
-				newLoc += direction * 2;
-			
-			var result = true;
-			if (walls.Any(w => w.LiesOn(newLoc - direction)))
 			{
-				result = false;
-				newLoc -= direction * 2;
-				if (!walls.Any(w => w.LiesOn(newLoc + direction.RotateLeft())))
+				newLoc += direction * 2;
+				if (!newLoc.FitsIn(1, board - 1)) return false;
+				if (walls.Any(w => w.LiesOn(newLoc - direction)))
 				{
-					newLoc += direction.RotateLeft() * 2;
-					result = true;
-				}
-				else if (!walls.Any(w => w.LiesOn(newLoc + direction.RotateRight())))
-				{
-					newLoc += direction.RotateRight() * 2;
-					result = true;
+					newLoc -= direction * 2;
+					if (!walls.Any(w => w.LiesOn(newLoc + direction.RotateLeft())))
+						newLoc += direction.RotateLeft() * 2;
+					else if (!walls.Any(w => w.LiesOn(newLoc + direction.RotateRight())))
+						newLoc += direction.RotateRight() * 2;
+					else
+						return false;
 				}
 			}
 
 			this.location = newLoc;
-			return result;
+			return true;
 		}
 
-		protected virtual bool TryPlaceWall(Vector2D position, int board, bool isVertical, ref List<Wall> walls)
+		protected virtual bool TryPlaceWall(Vector2D position, bool isVertical, ref Board board)
 		{
 			if (this.WallsAmount == 0) return false;
 
 			Wall wall = new Wall(position, isVertical);
-			if (!wall.Fits(board) || walls.Any(w => w.Intersects(wall)))
+			if (!wall.Fits(board.Size) || board.Walls.Any(w => w.Intersects(wall)))
 				return false;
 
 			this.WallsAmount--;
 			this.Steps++;
-			walls.Add(wall);
+			board.Walls.Add(wall);
 			this.Print(wall);
 			
 			return true;
 		}
 
-		public override string ToString() => $"{this.Name}";
-
-		// override object.Equals
-		public override bool Equals (object obj)
-		{
-			Player other = obj as Player;
-			return this?.Name == other?.Name;
-		}
-		
-		// override object.GetHashCode
-		public override int GetHashCode() => base.GetHashCode();
-
 		public static bool operator ==(Player p1, Player p2) => p1?.Equals(p2) ?? false;
 		public static bool operator !=(Player p1, Player p2) => !(p1 == p2);
+
+		public override bool Equals (object obj) => this?.Name == (obj as Player)?.Name;
+		public override int GetHashCode() => base.GetHashCode();
+		public override string ToString() => $"{this.Name}";
 	}
 }

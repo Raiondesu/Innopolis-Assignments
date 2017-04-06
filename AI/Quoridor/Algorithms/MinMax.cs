@@ -10,7 +10,7 @@ namespace Quoridor.Algorithms
 
 		public override string Name => base.Name + " (Min-Max game tree)"; 
 
-		public override bool Turn(int board, ref List<Wall> walls, Player opponent)
+		public override bool Turn(ref Board board)
 		{
 			throw new NotImplementedException();
 		}
