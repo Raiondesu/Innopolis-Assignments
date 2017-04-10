@@ -2,10 +2,11 @@ namespace Quoridor
 {
 	public struct Wall
 	{
-		public Wall(Vector2D center, bool isVertical)
+		public Wall(Vector2D center, bool isVertical, Player owner = null)
 		{
 			this.Center = center;
 			this.IsVertical = isVertical;
+			this.Owner = owner;
 			if (isVertical)
 			{
 				this.Start = center + Directions.Up;
@@ -22,9 +23,11 @@ namespace Quoridor
 		public Vector2D Center { get; }
 		public Vector2D End { get; }
 		public bool IsVertical { get; }
+		
+		public Player Owner { get; }
 
 		public bool Fits(Vector2D bounds)
-			=> this.Start.FitsIn(2, bounds - 2) && this.End.FitsIn(2, bounds - 2) && this.Center.X % 2 == 0 && this.Center.Y % 2 == 0;
+			=> this.Center.FitsIn(bounds) && this.Center.X % 2 == 0 && this.Center.Y % 2 == 0;
 
 		public bool LiesOn(Vector2D point)
 			=> this.Start == point || this.Center == point || this.End == point;

@@ -4,9 +4,9 @@
 	{
 		static void Main(string[] args)
 		{
-			var gameStats = QuoridorGame.Play(
-				new Algorithms.Random("Donald", Settings.Depth),
-				new Algorithms.Random("Hillary", Settings.Depth)
+			var game = Game.Play(
+				new Algorithms.MinMax("Donald"),
+				new Algorithms.MinMax("Hillary")
 			); //US elections 2016 racing simulator
 		}
 	}
