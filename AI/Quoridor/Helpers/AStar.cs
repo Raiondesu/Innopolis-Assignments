@@ -7,9 +7,9 @@ namespace Quoridor
 	static class AStar
 	{
 		// public static List<Vector2D> FindPath(Vector2D from, Vector2D to, Board board)
-		public static bool HasPath(Vector2D from, int to, Board board) => GetPathLenght(from, to, board) > -1;
+		public static bool HasPath(Vector2D from, int to, Board board) => GetPathLength(from, to, board) > -1;
 
-		public static int GetPathLenght(Vector2D from, int to, Board board)
+		public static int GetPathLength(Vector2D from, int to, Board board)
 		{
 			Collection<Node> closed = new Collection<Node>();
 			Collection<Node> open = new Collection<Node>();
@@ -45,7 +45,7 @@ namespace Quoridor
 						open.Add(neighbour);
 					else if (openNode.StepsFromStart > neighbour.StepsFromStart)
 					{
-						// openNode.Previous = current;
+						openNode.Previous = current;
 						openNode.EstimatedRemainingPath = current.EstimatedRemainingPath;
 					}
 				}

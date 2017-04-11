@@ -21,37 +21,31 @@ namespace Quoridor
 
 		private void Print(Wall w)
 		{
-			if (Settings.Log)
+			var color = Settings.ColorizeWalls ? w.Owner?.Color ?? Settings.FieldColor : Settings.FieldColor;
+
+			void printWall(string start, string center, string end)
 			{
-				var color = Settings.ColorizeWalls ? w.Owner.Color : Settings.FieldColor;
-
-				void printWall(string start, string center, string end)
-				{
-					PrintLiteral(start, w.Start, color);
-					PrintLiteral(center, w.Center, color);
-					PrintLiteral(end, w.End, color);
-				}
-
-				if (w.IsVertical) printWall(" │ ", " • ", " │ ");
-				else printWall("───", "╴•╶", "───");
-				// else printWall("───", " • ", "───");
-				UpdateCounters(w.Owner);
+				PrintLiteral(start, w.Start, color);
+				PrintLiteral(center, w.Center, color);
+				PrintLiteral(end, w.End, color);
 			}
+
+			if (w.IsVertical) printWall(" │ ", " • ", " │ ");
+			else printWall("───", "╴•╶", "───");
+			// else printWall("───", " • ", "───");
+			if (!(w.Owner is null)) UpdateCounters(w.Owner);
 		}
 
 		private void Print(Player p)
 		{
-			if (Settings.Log)
+			if (p.Steps > 0 && p.OldLocation != 0)
 			{
-				if (p.Steps > 0 && p.OldLocation != 0)
-				{
-					PrintLiteral($"   ", p.OldLocation, p.Color);
-					PrintLiteral($"   ", (this.board.Size + 1, p.OldLocation.Y), p.Color);
-				}
-				PrintLiteral(p.Name[0], p.Location, p.Color);
-				PrintLiteral(p.Name[0], (this.board.Size + 1, p.Location.Y), p.Color);
-				UpdateCounters(p);
+				PrintLiteral($"   ", p.OldLocation, p.Color);
+				PrintLiteral($"   ", (this.board.Size + 1, p.OldLocation.Y), p.Color);
 			}
+			PrintLiteral(p.Name[0], p.Location, p.Color);
+			PrintLiteral(p.Name[0], (this.board.Size + 1, p.Location.Y), p.Color);
+			UpdateCounters(p);
 		}
 
 		private void PrintLiteral(char line, Vector2D location, ConsoleColor color = Settings.FieldColor)
@@ -77,6 +71,8 @@ namespace Quoridor
 
 		private void UpdateCounters(Player p)
 		{
+			if (p is null) return;
+
 			void printScore(string line, int xoffset)
 				=> PrintLiteral(line, (xoffset, this.board.Size + 1), p.Color);
 
@@ -100,13 +96,15 @@ namespace Quoridor
 		private void PrintFieldInline(ConsoleColor color)
 		{
 			Console.ForegroundColor = color;
+			var indent = "\t\t";
 
-			var result = "\n\n       ╔════";
+			var result = "\n\n";
+			result += indent + "╔════";
 			for (int x = 0; x <= this.board.Size; x++)
 				result += x % 2 == 0 ? "═╤═" : "═══";
 
 			result += "════╗\n";
-			result += "       ║    ";
+			result += indent + "║    ";
 			for (int x = 0; x <= this.board.Size; x++)
 				result += x % 2 == 0 ? " │ " : x >> 1 < 10 ? $" {x >> 1} " : $"{x >> 1} ";
 			result += "    ║\n";
@@ -114,9 +112,9 @@ namespace Quoridor
 			for (int y = 0; y <= this.board.Size; y++, result += "\n")
 			{
 				if (y % 2 == 0)
-					result += "       ╟───";
+					result += indent + "╟───";
 				else
-					result += y >> 1 < 10 ? $"       ║  {y >> 1}" : $"       ║ {y >> 1}";
+					result += y >> 1 < 10 ? $"{indent}║  {y >> 1}" : $"{indent}║ {y >> 1}";
 
 				for (int x = 0; x <= this.board.Size; x++)
 				{
@@ -154,12 +152,12 @@ namespace Quoridor
 				}
 				result += y == 0 || y == this.board.Size ? "───╢" : "   ║";
 			}
-			result += "       ║    ";
+			result += indent + "║    ";
 			for (int x = 0; x <= this.board.Size; x++)
 				result += x == this.board.Size / 2 ? " │ " : "   ";
 			result += "    ║\n";
 
-			result += "       ╚════";
+			result += indent + "╚════";
 			for (int x = 0; x <= this.board.Size; x++)
 				result +=  x == this.board.Size / 2 ? "═╧═" : "═══";
 			result += "════╝\n";

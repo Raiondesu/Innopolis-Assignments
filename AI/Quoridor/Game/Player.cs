@@ -35,10 +35,9 @@ namespace Quoridor
 		}
 
 		public int Goal { get; set; }
+		public bool IsMaximizing { get;  set; }
 		public ConsoleColor Color { get; set; }
 		public string OpponentName { get; set; }
-
-		public List<Action<Board>> Moves { get; protected set; } = new List<Action<Board>>();
 
 		public abstract Player Copy();
 		public virtual void Turn(ref Board board, int delay = 0)
@@ -48,63 +47,87 @@ namespace Quoridor
 				System.Threading.Thread.Sleep(delay);
 		}
 
-		public bool TryMove(Vector2D direction, Board board, bool emergencyLeft = true)
+		public List<Action<Board>> PossibleMoves(Vector2D direction, Board board)
 		{
 			var opponent = board.Players[this.OpponentName];
-
 			var newLoc = this.location + direction;
+			var result = new List<Action<Board>>();
+			Func<Vector2D, Action<Board>> action = (loc) => (state) => {
+				state.Players[this.Name].Location = loc;
+			};
 
 			if (board.Walls.Any(w => w.LiesOn(newLoc)) || !newLoc.FitsIn(board.Size))
-				return false;
+				return new List<Action<Board>>();
 
 			newLoc += direction;
 
 			if (opponent.Location == newLoc)
 			{
-				newLoc += direction * 2;
-				// if (!newLoc.FitsIn(board.Size)) return false;
+				newLoc += direction;
 				if (board.Walls.Any(w => w.LiesOn(newLoc - direction)) || !(newLoc - direction).FitsIn(board.Size))
 				{
-					newLoc -= direction * 2;
-					if (emergencyLeft && !board.Walls.Any(w => w.LiesOn(newLoc + direction.RotateLeft())))
-						newLoc += direction.RotateLeft() * 2;
-					else if (!board.Walls.Any(w => w.LiesOn(newLoc + direction.RotateRight())))
-						newLoc += direction.RotateRight() * 2;
-					else
-						return false;
+					newLoc -= direction;
+					if (!board.Walls.Any(w => w.LiesOn(newLoc + direction.RotateLeft())))
+						result.Add(action(newLoc + direction.RotateLeft() * 2));
+					if (!board.Walls.Any(w => w.LiesOn(newLoc + direction.RotateRight())))
+						result.Add(action(newLoc + direction.RotateRight() * 2));
 				}
+				else result.Add(action(newLoc + direction));
 			}
+			else result.Add(action(newLoc));
 
-			this.Location = newLoc;
-			return true;
+			return result;
 		}
 
-		public bool TryPlaceWall(Vector2D position, bool isVertical, ref Board board)
+		public List<Action<Board>> PossibleWalls(Vector2D position, bool isVertical, Board board)
 		{
+			var result = new List<Action<Board>>();
+
 			var opponent = board.Players[this.OpponentName];
 
 			if (this.WallsAmount == 0)
-				return false;
+				return new List<Action<Board>>();
 
 			Wall wall = new Wall(position, isVertical, this);
 			if (!wall.Fits(board.Size) || board.Walls.Any(w => w.Intersects(wall)))
-				return false;
+				return new List<Action<Board>>();
 
-			board.Walls.Add(wall);
+			result.Add((state) => {
+				state.Walls.Add(wall);
+				state.Players[this.Name].WallsAmount--;
+			});
 			
 			if (!AStar.HasPath(this.location, this.Goal, board))
-			{
-				board.Walls.Remove(wall);
-				return false;
-			}
+				return new List<Action<Board>>();
 			if (!AStar.HasPath(opponent.location, opponent.Goal, board))
-			{
-				board.Walls.Remove(wall);
-				return false;
-			}
+				return new List<Action<Board>>();
 
-			this.WallsAmount--;
-			return true;
+			return result;
+		}
+		
+		
+		public List<Action<Board>> AllMovesOn(Board board)
+		{
+			var moves = new List<Action<Board>>();
+
+			moves.AddRange(this.PossibleMoves(Directions.Up, new Board(board)));
+			moves.AddRange(this.PossibleMoves(Directions.Down, new Board(board)));
+			moves.AddRange(this.PossibleMoves(Directions.Left, new Board(board)));
+			moves.AddRange(this.PossibleMoves(Directions.Right, new Board(board)));
+
+            // for (int y = 2; y <= board.Size - 2; y += 2)
+			// 	for (int x = 2; x <= board.Size - 2; x += 2)
+			// 	{
+			// 		int _x = x;
+			// 		int _y = y;
+			// 		moves.AddRange(this.PossibleWalls((_x, _y), true, new Board(board)));
+			// 		moves.AddRange(this.PossibleWalls((_x, _y), true, new Board(board)));
+			// 	}
+
+			//// Randomization
+			// var rnd = new Random();
+			// moves = moves.OrderBy(m => rnd.Next()).ToList();
+			return moves;
 		}
 
 		public static bool operator ==(Player p1, Player p2) => p1?.Name?.Equals(p2?.Name) ?? false;
@@ -112,6 +135,6 @@ namespace Quoridor
 
 		public sealed override bool Equals (object obj) => this?.Name == (obj as Player)?.Name;
 		public sealed override int GetHashCode() => base.GetHashCode();
-		public sealed override string ToString() => $"{this.Name}, {this.Location}";
+		public sealed override string ToString() => $"{this.Name} {this.Location}";
 	}
 }

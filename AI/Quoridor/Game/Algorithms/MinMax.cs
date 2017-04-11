@@ -9,56 +9,52 @@ namespace Quoridor.Algorithms
 		{
 			return new MinMax(this.Name, this.Depth, this.WallsAmount)
 			{
-				Moves = this.Moves,
 				Goal = this.Goal,
 				Steps = this.Steps,
 				Location = this.Location,
 				OldLocation = this.OldLocation,
-				OpponentName = this.OpponentName
+				OpponentName = this.OpponentName,
+				IsMaximizing = this.IsMaximizing
 			};
 		}
 
 		public override void Turn(ref Board board, int delay = 0)
 		{
-			var allMoves = board.AllMovesFor(this);
+			var allMoves = this.AllMovesOn(board);
 			var bestMove = allMoves[0];
 			int bestValue = int.MinValue;
-			int multiplier = this.Goal - 1 == 0 ? -1 : 1;
 
 			foreach (var currentMove in allMoves)
 			{
 				var temp = new Board(board);
 				currentMove(temp);
-				var value = temp.Value * multiplier;//this.Calculate(temp, this.OpponentName, this.Depth - 1) * multiplier;
-				if (value >= bestValue)
+				var value = this.Calculate(temp, this.OpponentName, this.Name, this.Depth - 1, !this.IsMaximizing);
+				if (value > bestValue)
 				{
 					bestValue = value;
 					bestMove = currentMove;
 				}
 			}
 
-			this.Moves.Add(bestMove);
 			bestMove(board);
 
 			base.Turn(ref board, delay);
 		}
 
-		private int Calculate(Board board, string activePlayer, int depth)
+		private int Calculate(Board board, string activePlayer, string nextPlayer, int depth, bool isMax)
 		{
-			var tempBoard = new Board(board);
-			var player = tempBoard.Players[activePlayer];
-			
-			if (depth == 0) return tempBoard.Value;
+			if (depth == 0)
+				return board.Value(activePlayer, nextPlayer);
 
-			var newMoves = tempBoard.AllMovesFor(player);
+			var newMoves = board.Players[activePlayer].AllMovesOn(board);
 
-			int bestValue = int.MinValue;
-			for (int i = 0; i < newMoves.Count; i++)
+			int bestValue = isMax ? int.MinValue : int.MaxValue;
+			foreach (var move in newMoves)
 			{
-				var temp = new Board(tempBoard);
-				newMoves[i](temp);
-				int value = Calculate(temp, player.OpponentName, depth - 1);
-				if (value > bestValue)
+				var temp = new Board(board);
+				move(temp);
+				int value = Calculate(temp, nextPlayer, activePlayer, depth - 1, !isMax);
+				if (isMax ? value > bestValue : value < bestValue)
 					bestValue = value;
 			}
 			return bestValue;

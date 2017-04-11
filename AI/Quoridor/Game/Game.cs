@@ -1,11 +1,15 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Quoridor
 {
 	public partial class Game
 	{
 		private Board board;
+		private List<Board> history = new List<Board>();
 		public Board Stats => this.board;
+		public ImmutableList<Board> History => history.ToImmutableList();
 
 		Game(Player one, Player another)
 		{
@@ -13,7 +17,7 @@ namespace Quoridor
 				throw new ArgumentException("Players names' must be unique!");
 
 			this.board = new Board(one, another);
-
+			
 			if (Settings.Log)
 			{
 				Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -34,9 +38,18 @@ namespace Quoridor
 				board.Players.Values.ForEach(p => {
 					if (!board.HasWinner)
 					{
+						/// Current move indicator
+						if (Settings.Log)
+							PrintLiteral(p.Name[0], (-1, -1), p.Color);
+
 						p.Turn(ref this.board);
-						this.Print(p);
-						this.board.Walls.ForEach(this.Print);
+
+						history.Add(new Board(this.board));
+						if (Settings.Log)
+						{
+							this.Print(p);
+							this.board.Walls.ForEach(this.Print);
+						}
 					}
 				});
 			}
@@ -65,6 +78,16 @@ namespace Quoridor
 				Console.ResetColor();
 			}
 			return game;
+		}
+
+		public void Replay(int pauseBetweenMoves = 200)
+		{
+			this.PrintFieldInline(Settings.FieldColor);
+			this.history.ForEach(m => {
+				m.Players.Values.ForEach(this.Print);
+				m.Walls.ForEach(this.Print);
+				System.Threading.Thread.Sleep(pauseBetweenMoves);
+			});
 		}
 	}
 }

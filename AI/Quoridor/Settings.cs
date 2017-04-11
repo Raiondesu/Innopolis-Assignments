@@ -4,8 +4,8 @@ namespace Quoridor
 	{
 		public const int WallsAmount = 100;
 		public const int BoardSize = 9;
-		public const int Depth = 1;
-		public const bool Log = false;
+		public const int Depth = 2;
+		public const bool Log = true;
 
 		public const System.ConsoleColor FieldColor = System.ConsoleColor.White;
 		public const bool ColorizeWalls = true;
