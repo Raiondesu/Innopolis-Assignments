@@ -54,7 +54,7 @@ namespace MultisetTask
 			Multiset<T> result = new Multiset<T>(this.store);
 
 			foreach (var pair in other.store)
-				result.store.Add(pair.Key, pair.Value);
+				result.Add(pair.Key, pair.Value);
 			
 			return result;
 		}
