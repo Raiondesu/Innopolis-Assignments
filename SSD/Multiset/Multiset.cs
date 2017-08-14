@@ -11,6 +11,7 @@ namespace MultisetTask
 		private Multiset(Dictionary<T, uint> dictionary) => this.store = dictionary;
 		public Multiset() : this(new Dictionary<T, uint>()) {}
 
+		/// Get & Set for specific elements
 		public uint this[T key]
 		{
 			get => this.store[key];
@@ -18,6 +19,7 @@ namespace MultisetTask
 		}
 
 
+		/// Classic set operations
 
 		public void Add(T value, uint quantity = 1)
 		{
@@ -45,6 +47,7 @@ namespace MultisetTask
 		}
 
 
+		/// Add & Substract for Multiset<T>
 
 		public Multiset<T> Add(Multiset<T> other)
 		{
@@ -67,15 +70,18 @@ namespace MultisetTask
 		}
 
 
+		/// Operators:
+
 		public static bool operator ==(Multiset<T> one, Multiset<T> another) => one.Equals(another);
 		public static bool operator !=(Multiset<T> one, Multiset<T> another) => !one.Equals(another);
 		public static Multiset<T> operator +(Multiset<T> one, Multiset<T> another) => one.Add(another);
 		public static Multiset<T> operator -(Multiset<T> one, Multiset<T> another) => one.Substract(another);
 
-
 		public static explicit operator Multiset<T>(Dictionary<T, uint> dictionary) => new Multiset<T>(dictionary);
 		public static explicit operator Dictionary<T, uint>(Multiset<T> bag) => bag.store;
 
+
+		/// Overrides:
 
 		public override int GetHashCode() => this.store.GetHashCode();
 
