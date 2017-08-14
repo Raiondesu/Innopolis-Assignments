@@ -1,0 +1,317 @@
+//Models
+
+abstract class Product {
+
+    public abstract int CalculatePrice();
+    public abstract bool IsAvailable();
+    
+}
+
+
+class BubbleTea : Product {
+
+    private bool isCustom;
+    private int teaSize;
+    private bool isOnMilk;
+    private Syrup[] syrups;
+    private TeaTopping[] toppings;
+
+    public BubbleTea(bool isCustom, int teaSize, bool isOnMilk, Syrup[] syrups, TeaTopping[] toppings) {
+        this.isCustom = isCustom;
+        this.teaSize = teaSize;
+        this.isOnMilk = isOnMilk;
+        this.syrups = syrups;
+        this.toppings = toppings;
+    }
+    
+    public bool IsCustom() { return this.isCustom; }
+    public int GetTeaSize() { return this.teaSize; }
+    public bool IsOnMilk() { return this.isOnMilk; }
+    public Syrup[] GetSyrups() { return this.syrups; }
+    public TeaTopping[] GetTeaToppings() { return this.toppings; }
+    
+    public override int CalculatePrice() {
+        int price = DB.GetInitialBubbleTeaPrice(this.teaSize);        //Getter from a database, that is implemented in a data-access layer
+        
+        if (this.isOnMilk) price += DB.GetMilkPrice();    //Another DB getter
+        
+        foreach (syrup in _syrups) {
+            price += syrup.GetPrice(); 
+        }
+        
+        foreach (topping in _toppings) {
+            price += topping.GetPrice();
+        }
+        
+        return price;
+    }
+    
+    public override bool IsAvailable() {
+        foreach (syrup in _syrups) {
+            if (!syrup.IsAvailable()) return false;
+        }
+        
+        foreach (topping in _toppings) {
+            if (!topping.IsAvailable()) return false;
+        }
+        
+        return true;
+    }
+    
+}
+
+
+abstract class Ingredient {
+
+    protected string name;
+
+    public Ingridient(string name) {
+        this.name = name;
+    }
+
+    public virtual int GetPrice() {
+        return DB.Syrups.GetPriceByName(this.name);
+    }
+
+    public virtual bool IsAvailable() {
+        return DB.Syrups.AmountByName(this.name) > 0;
+    }
+
+}
+
+
+class Syrup : Ingredient {
+
+    public Syrup(string name) : base(name) {}
+    
+}
+
+
+class TeaTopping : Ingredient {
+
+    public TeaTopping(string name) : base(name) {}
+    
+}
+
+
+
+class Order {
+    
+    private int id;
+    private DateTime creationTime;
+    private string deliverAddress;
+    private bool isClosed;
+    private OrderItem[] orderItems;
+
+    public Order(DateTime creationTime, string deliverAddress, OrderItem[] orderItems) {
+        this.creationTime = creationTime;
+        this.deliverAddress = deliverAddress;
+        this.orderItems = orderItems;
+    }
+    
+    public int GetId(){
+        return this.id;
+    }
+    
+    public DateTime GetCreationTime(){
+        return this.creationTime;
+    }
+    
+    public string GetDeliverAddress(){
+        return this.deliverAddress;
+    }
+    
+    public bool IsClosed(){
+        return this.isClosed;
+    }
+    
+     public OrderItem[] GetOrderItems(){
+        return this.orderItems;
+    }
+    
+    public void Close() {
+        this.isClosed = true;
+    }
+ 
+}
+
+      
+class OrderItem {
+    
+    private int amount;
+    private Product product;
+
+    public OrderItem(int amount, Product product) {
+        this.amount = amount;
+        this.product = product;
+    }
+    
+    public int GetAmount(){
+        return this.amount;
+    }
+    
+    public Product GetProduct(){
+        return this.product;
+    }
+
+}
+
+
+
+//Descriptions (models for correct json parsing):
+
+abstract class ProductDescription {}
+
+
+class BubbleTeaDescription : ProductDescription {
+
+    public bool IsCustom;
+    public int TeaSize;
+    public bool IsOnMilk;
+    public int[] SyrupIds;
+    public int[] TeaToppingIds;
+    
+}
+
+
+class OrderItemDescription {
+
+    public int Amount;
+    public string ProductType;
+    public ProductDescription Product;
+    
+}
+
+
+class OrderDescription {
+
+    public DateTime CreationTime;
+    public String DeliverAddress;
+    public OrderItemDescription[] OrderItems;
+    
+} 
+
+
+
+//Creators:
+
+class OrderCreator {
+
+    public OrderCreator() {}
+    
+    public Order CreateOrder(OrderDescription orderDescription) {
+        List<OrderItem> orderItems = new List<OrderItem>();
+
+        OrderItemCreator itemCreator = new OrderItemCreator();
+        
+        foreach (itemDescription in orderDescription.OrderItems) {
+            orderItems.Add(itemCreator.CreateOrderItem(itemDescription));
+        }
+    
+        return new Order(orderDescrption.CreationTime, orderDescription.DeliverAddress, orderItems.ToArray());
+    }
+
+}
+
+
+class OrderItemCreator {
+
+    private Dictionary<string, ProductCreator> AllProductCreators = new Dictionary<string, ProductCreator>() {
+        { "BubbleTea", new BubbleTeaCreator() },
+        { "Protein", new ProteinCreator() },    //ProteinCreator and JuiceCreator are parts of other, different sub-functionalities, 
+        { "Juice", new JuiceCreator() }         //so they are to be implemented elsewhere.
+    };
+
+    public OrderItemCreator() {}
+    
+    public OrderItem CreateOrderItem(OrderItemDescription itemDesc) {
+        Dictionary<string, ProductCreator> creators = AllProductCreators;
+        
+        if (!creators.ContainsKey(itemDesc.Product))
+            return null;
+    
+        ProductCreator productCreator = creators[itemDesc.Product];
+        
+        Product product = productCreator.Create(itemDesc.Product);
+        
+        return new OrderItem(itemDesc.Amount, product);
+    }
+    
+}
+
+
+
+abstract class ProductCreator {
+
+    public abstract Product Create(ProductDescription productDesc);
+    
+}
+
+
+class BubbleTeaCreator : ProductCreator {
+
+    public BubbleTeaCreator() {}
+
+    public override Product Create(ProductDescription productDesc) {
+        BubbleTeaDescription desc = (BubbleTeaDescription) productDesc;
+
+        List<Syrup> syrups = new List<Syrup>();
+        List<TeaTopping> toppings = new List<TeaTopping>();
+    
+        foreach (syrupId in desc.SyrupIds) {
+            syrups.Add(DB.GetSyrup(syrupId));
+        }
+
+        foreach (toppingId in desc.TeaToppingIds) {
+            toppings.Add(DB.GetTeaTopping(toppingId));
+        }
+
+        return new BubbleTea(desc.IsCustom, desc.TeaSize, desc.IsOnMilk, syrups.ToArray(), toppings.ToArray());       
+    }
+    
+}
+
+
+class ProteinCreator : ProductCreator {
+
+    public ProteinCreator() {}
+    
+    public override Product Create(ProductDescription productDesc) {
+        ...
+    }
+    
+}
+
+
+class JuiceCreator : ProductCreator {
+
+    public JuiceCreator() {}
+    
+    public override Product Create(ProductDescription productDesc) {
+        ...
+    }
+    
+}
+
+
+
+//Request handler:
+
+class OrderHandler : HTTPRequestHandler {
+    ...
+    public void HandleOrderRequest() {
+        string json = Request.Body;
+                                            //A json parser (may be an external dependency or implemented in a different set of functionalities)
+        OrderDescription orderDescription = JsonParser.Deserialize<OrderDescription>(json);
+        
+        OrderCreator creator = new OrderCreator();
+        
+        Order order = creator.CreateOrder(orderDescription);
+        
+        DB.Orders.Add(order);
+        
+        //The global queue, that is then being sent to bartender in a separate thread for live updates (see US-11 in functional requirements)
+        OpenOrders.Enque(order);
+    }
+    ...
+}
