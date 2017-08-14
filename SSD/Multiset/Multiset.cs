@@ -98,7 +98,7 @@ namespace MultisetTask
 			string result = "{ ";
 
 			foreach (var pair in this.store)
-				result += $"{pair.Key}" + (pair.Value > 1 ? $" ({pair.Value}), " : ", ");
+				result += $"{pair.Key}" + (pair.Value > 1 ? $"({pair.Value}), " : ", ");
 
 			result = result.Substring(0, result.Length - 2);
 			result += " }";
