@@ -1,4 +1,4 @@
-# First task on Software System Design course of Innopolis University
+# First task on Software System Design course
 ## Multiset (or bag) implementation in C#
 
 ### Used technology stack
@@ -13,6 +13,7 @@ First, install [.NET Core](https://www.microsoft.com/net/core) on your machine.
 Then download this project and:
 
 ```bash
+cd ./Multiset
 dotnet restore
 dotnet run
 ```
