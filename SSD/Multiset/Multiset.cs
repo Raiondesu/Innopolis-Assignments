@@ -8,7 +8,7 @@ namespace MultisetTask
 	{
 		private Dictionary<T, uint> store;
 		
-		private Multiset(Dictionary<T, uint> dictionary) => this.store = dictionary;
+		private Multiset(Dictionary<T, uint> dictionary) => this.store = new Dictionary<T, uint>(dictionary);
 		public Multiset() : this(new Dictionary<T, uint>()) {}
 
 		/// Get & Set for specific elements
