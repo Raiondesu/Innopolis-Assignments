@@ -49,7 +49,7 @@ namespace CourseGradingCalculator
             Console.WriteLine("\nBut his course grade is not this good overall:");
 
             var agrade = SA.GetGradeForStudent(Alex);
-            Console.WriteLine(agrade.Literal + " with " + agrade.Points.Max + " points.");
+            Console.WriteLine(agrade.Literal + " with " + agrade.Points.Max + " points out of " + SA.SumPoints + " of " + SA.MaxPoints + " total.");
         }
     }
 }
