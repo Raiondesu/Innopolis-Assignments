@@ -6,22 +6,26 @@ namespace MultisetTask
 {
 	public class Multiset<T>
 	{
-		private Dictionary<T, uint> store;
+		protected Dictionary<T, uint> store;
 		
-		private Multiset(Dictionary<T, uint> dictionary) => this.store = new Dictionary<T, uint>(dictionary);
-		public Multiset() : this(new Dictionary<T, uint>()) {}
+		protected Multiset(Dictionary<T, uint> dictionary) => this.store = new Dictionary<T, uint>(dictionary);
 
-		/// Get & Set for specific elements
+		public Multiset() : this(new Dictionary<T, uint>()) {}
+		public Multiset(Multiset<T> other) : this(other.store) {}
+
+		public int Count => this.store.Count;
+
+		/// Get & Set the quantity for specific elements
 		public uint this[T key]
 		{
-			get => this.store[key];
+			get => this.store.ContainsKey(key) ? this.store[key] : 0;
 			set => this.store[key] = value;
 		}
 
 
 		/// Classic set operations
 
-		public void Add(T value, uint quantity = 1)
+		public virtual void Add(T value, uint quantity = 1)
 		{
 			if (store.ContainsKey(value))
 				store[value] += quantity;
@@ -29,7 +33,7 @@ namespace MultisetTask
 				store.Add(value, quantity);
 		}
 
-		public void Remove(T value, uint quantity)
+		public virtual bool Remove(T value, uint quantity)
 		{
 			if (store.ContainsKey(value))
 			{
@@ -37,10 +41,13 @@ namespace MultisetTask
 					store[value] -= quantity;
 				else
 					store.Remove(value);
+				
+				return true;
 			}
+			return false;
 		}
 
-		public void Remove(T value)
+		public virtual void Remove(T value)
 		{
 			if (store.ContainsKey(value))
 				store.Remove(value);
@@ -49,7 +56,7 @@ namespace MultisetTask
 
 		/// Add & Substract for Multiset<T>
 
-		public Multiset<T> Add(Multiset<T> other)
+		public virtual Multiset<T> Add(Multiset<T> other)
 		{
 			Multiset<T> result = new Multiset<T>(this.store);
 
@@ -59,7 +66,7 @@ namespace MultisetTask
 			return result;
 		}
 
-		public Multiset<T> Substract(Multiset<T> other)
+		public virtual Multiset<T> Substract(Multiset<T> other)
 		{
 			Multiset<T> result = new Multiset<T>(this.store);
 
@@ -90,7 +97,7 @@ namespace MultisetTask
 			if (obj == null || obj.GetType() != typeof(Multiset<T>))
 				return false;
 			
-			return (obj as Multiset<T>).store.Count == this.store.Count && !(obj as Multiset<T>).store.Except(this.store).Any();
+			return (obj as Multiset<T>).Count == this.Count && !(obj as Multiset<T>).store.Except(this.store).Any();
 		}
 
 		public override string ToString()
