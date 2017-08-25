@@ -22,9 +22,11 @@ namespace CourseGradingCalculator
 			}
 
 			this.Name = CourseName;
+			
 			this.courseTasks = new Dictionary<string, Task>(
 				Tasks.ToList().ConvertAll(t => new KeyValuePair<string, Task>(t.Name, t))
 			);
+
 			this.MaxPoints = Grades.Max(g => g.MaxPoints);
 			this.SumPoints = Tasks.Sum(t => t.Price);
 			this.students = new List<Student>();
@@ -69,10 +71,22 @@ namespace CourseGradingCalculator
 			foreach (var grade in this.grades)
 			{
 				if (grade.Value.Min < Points && Points <= grade.Value.Max)
-					return new Grade(grade.Key, grade.Value.Min, Points);
+					return new Grade(grade.Key, Points, Points);
 			}
 
 			return Grade.Empty(outbounded);
+		}
+
+		public Grade GetGradeForStudent(Student Student)
+		{
+			if (!this.students.Contains(Student)) return Grade.Empty("Not enrolled");
+
+			double resultingPoints = 0;
+
+			foreach (var task in Student.Courses[this])
+				resultingPoints += task.Value.Points;
+
+			return this.GetCourseGradeByPoints(resultingPoints);
 		}
 
 		public void SetCourseGrade(string Grade, (double Min, double Max) Points)
@@ -101,18 +115,6 @@ namespace CourseGradingCalculator
 						t => new StudentTask(t.Value.Name, t.Value.Type, t.Value.Price)
 					)
 				);
-		}
-
-		public Grade GetGradeForStudent(Student Student)
-		{
-			if (!this.students.Contains(Student)) return Grade.Empty("Not enrolled");
-
-			double resultingPoints = 0;
-
-			foreach (var task in Student.Courses[this])
-				resultingPoints += task.Value.Points;
-
-			return this.GetCourseGradeByPoints(resultingPoints);
 		}
 	}
 }

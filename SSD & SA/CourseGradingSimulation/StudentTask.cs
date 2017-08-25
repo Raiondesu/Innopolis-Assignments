@@ -7,6 +7,8 @@ namespace CourseGradingCalculator
 
 		public double Points { get; private set; }
 
+		public double PercentagePoints => Points * 100 / Price;
+
 		public void Complete(double FinalPoints)
 			=> this.Points = FinalPoints >= 0 ? FinalPoints : 0;
 

@@ -15,13 +15,18 @@ namespace MultisetTask
 
 		public int Count => this.store.Count;
 
-		/// Get & Set the quantity for specific elements
+		/// Get & Set for specific elements
+
+		//The quantity of specific element
 		public uint this[T key]
 		{
 			get => this.store.ContainsKey(key) ? this.store[key] : 0;
 			set => this.store[key] = value;
 		}
 
+		//The set of all elements
+		public IEnumerable<T> Contents => this.store.Keys;
+		
 
 		/// Classic set operations
 
