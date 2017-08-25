@@ -1,4 +1,4 @@
-# First task on Software System Design course
+# [First task](https://github.com/Raiondesu/Innopolis-Assignments/tree/master/SSD%20%26%20SA/Multiset) on Software System Design course
 ## Multiset (or bag) implementation in C#
 
 ### Used technology stack
