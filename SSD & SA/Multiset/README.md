@@ -10,10 +10,9 @@
 
 First, install [.NET Core](https://www.microsoft.com/net/core) on your machine.
 
-Then download this project and:
+Then download this project and in its folder:
 
 ```bash
-cd ./Multiset
 dotnet restore
 dotnet run
 ```
